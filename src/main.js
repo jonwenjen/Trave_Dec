@@ -54,6 +54,7 @@ import {
   filterEventsByType,
   searchFieldContent,
   applyEdits,
+  highlightText,
   exportTripJSON,
   importTripJSON,
   generateICS,
@@ -115,6 +116,66 @@ function toast(message) {
   toastTimer = setTimeout(() => node.classList.remove('toast--visible'), 2800);
 }
 
+/**
+ * Targeted DOM patch: update container content without losing interactive state.
+ * Compares new HTML against existing DOM and only touches changed nodes.
+ */
+function patchHTML(container, newHTML) {
+  // Capture interactive state
+  const openDetails = new Set();
+  container.querySelectorAll('details[open]').forEach(d => {
+    const id = d.closest('[id]');
+    if (id) openDetails.add(id.id);
+  });
+
+  const focusedEl = document.activeElement;
+  const focusId = focusedEl && focusedEl.id ? focusedEl.id : null;
+  const focusSelStart = focusedEl && typeof focusedEl.selectionStart === 'number' ? focusedEl.selectionStart : null;
+  const focusSelEnd = focusedEl && typeof focusedEl.selectionEnd === 'number' ? focusedEl.selectionEnd : null;
+  const isComposing = focusedEl && focusedEl.dataset && focusedEl.dataset._composing === '1';
+
+  // If currently composing (IME), skip update for this container if it contains the focused element
+  if (isComposing && container.contains(focusedEl)) return;
+
+  // Build new DOM fragment
+  const temp = document.createElement(container.tagName || 'div');
+  temp.innerHTML = newHTML;
+
+  // Fast path: if content is identical, do nothing
+  if (container.innerHTML === newHTML) return;
+
+  // Replace content
+  container.innerHTML = newHTML;
+
+  // Restore <details> open state
+  openDetails.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const details = el.querySelector('details') || (el.tagName === 'DETAILS' ? el : null);
+      if (details) details.open = true;
+    }
+  });
+
+  // Also restore by matching details that were open by their parent event id
+  container.querySelectorAll('[id]').forEach(node => {
+    if (openDetails.has(node.id)) {
+      const d = node.querySelector('details');
+      if (d) d.open = true;
+    }
+  });
+
+  // Restore focus
+  if (focusId) {
+    const restored = document.getElementById(focusId);
+    if (restored && restored !== document.activeElement) {
+      restored.focus({ preventScroll: true });
+      if (focusSelStart != null && typeof restored.setSelectionRange === 'function') {
+        try { restored.setSelectionRange(focusSelStart, focusSelEnd); } catch {}
+      }
+    }
+  }
+}
+
 let saveTimer = null;
 function scheduleSave() {
   clearTimeout(saveTimer);
@@ -132,11 +193,6 @@ function update({ rerender = true } = {}) {
 }
 
 function render() {
-  const active = document.activeElement;
-  const focusId = active && active.id ? active.id : null;
-  const caret =
-    active && typeof active.selectionStart === 'number' ? active.selectionStart : null;
-
   renderTabs();
   renderPartyControl();
   renderOperate();
@@ -144,20 +200,6 @@ function render() {
   renderBudget();
   renderFieldKit();
   renderStorageNote();
-
-  if (focusId) {
-    const restored = $(focusId);
-    if (restored && restored !== document.activeElement) {
-      restored.focus({ preventScroll: true });
-      if (caret != null && typeof restored.setSelectionRange === 'function') {
-        try {
-          restored.setSelectionRange(caret, caret);
-        } catch {
-          /* number inputs 不一定支援 */
-        }
-      }
-    }
-  }
 }
 
 function currentDay() {
@@ -202,6 +244,8 @@ const PANEL_IDS = {
   fieldkit: 'panel-fieldkit',
 };
 
+const tabScrollPositions = {};
+
 function renderTabs() {
   for (const tab of TABS) {
     const btn = $(`tab-${tab}`);
@@ -215,11 +259,13 @@ function renderTabs() {
 
 function setTab(tab, { focus = false } = {}) {
   if (!TABS.includes(tab)) return;
+  tabScrollPositions[state.activeTab] = window.scrollY;
   state.activeTab = tab;
   renderTabs();
   scheduleSave();
   if (focus) $(`tab-${tab}`).focus();
-  window.scrollTo({ top: 0, behavior: 'auto' });
+  const saved = tabScrollPositions[tab];
+  window.scrollTo({ top: saved || 0, behavior: 'auto' });
 }
 
 /* ═══════════════════════════════════════════
@@ -273,7 +319,7 @@ function renderDayRail() {
     today.getDate()
   ).padStart(2, '0')}`;
 
-  track.innerHTML = tripDays
+  patchHTML(track, tripDays
     .map((day) => {
       const n = dayIndexOf(day);
       const summary = summarizeDay(day, state.partySize, state.bufferEdits, policy());
@@ -288,10 +334,16 @@ function renderDayRail() {
           ${summary.highRiskCount ? '<span class="day-chip__flag" aria-hidden="true"></span>' : ''}
         </button>`;
     })
-    .join('');
+    .join(''));
 
   const active = track.querySelector('.day-chip--active');
   if (active) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+
+  const todayDay = tripDays.find(d => d.date === todayStamp);
+  const btnToday = $('btn-today');
+  if (btnToday) {
+    btnToday.hidden = !todayDay || dayIndexOf(todayDay) === state.currentDay;
+  }
 }
 
 function renderHero() {
@@ -309,7 +361,7 @@ function renderHero() {
        </p>`
     : '<p class="day-hero__lodging"><span class="day-hero__lodging-label">住宿</span><span>當晚返程，不住宿</span></p>';
 
-  $('day-hero').innerHTML = `
+  patchHTML($('day-hero'), `
     <p class="day-hero__eyebrow">
       <span class="day-hero__day">Day ${dayIndexOf(day)}</span>
       <span>${date.getMonth() + 1} 月 ${date.getDate()} 日（${esc(day.weekday)}）</span>
@@ -317,7 +369,7 @@ function renderHero() {
     </p>
     <h1 class="day-hero__title">${esc(day.title)}</h1>
     <p class="day-hero__subtitle">${esc(day.subtitle)}</p>
-    ${lodging}`;
+    ${lodging}`);
 }
 
 function renderNowCard() {
@@ -336,7 +388,7 @@ function renderNowCard() {
        ${next.statusNote ? `<p class="now-card__note">${esc(next.statusNote)}</p>` : ''}`
     : '<p class="now-card__event"><span class="now-card__event-title">今天的行程都跑完了。</span></p>';
 
-  $('now-card').innerHTML = `
+  patchHTML($('now-card'), `
     <p class="now-card__label">${isToday ? (next ? '接下來' : '今日收工') : '當日開場'}</p>
     ${nextBlock}
     <dl class="now-card__stats">
@@ -344,7 +396,7 @@ function renderNowCard() {
       <div class="stat"><dt>每人費用</dt><dd>${formatCurrency(summary.costPerPerson)}</dd></div>
       <div class="stat${summary.riskCount ? ' stat--alert' : ''}"><dt>需留意轉乘</dt><dd>${summary.riskCount} 段</dd></div>
       <div class="stat"><dt>時段</dt><dd>${esc(summary.firstTime || '—')}–${esc(summary.lastTime || '—')}</dd></div>
-    </dl>`;
+    </dl>`);
 }
 
 function renderTypeFilters() {
@@ -353,14 +405,14 @@ function renderTypeFilters() {
   const types = Object.keys(EVENT_TYPE_LABELS).filter((t) => present.has(t));
   const all = state.typeFilters.length === 0;
 
-  $('type-filters').innerHTML = [
+  patchHTML($('type-filters'), [
     `<button type="button" class="chip${all ? ' chip--active' : ''}" data-type="__all" aria-pressed="${all}">全部</button>`,
     ...types.map((type) => {
       const on = state.typeFilters.includes(type);
       const meta = typeMeta(type);
       return `<button type="button" class="chip${on ? ' chip--active' : ''}" data-type="${esc(type)}" aria-pressed="${on}">${meta.icon} ${esc(meta.label)}</button>`;
     }),
-  ].join('');
+  ].join(''));
 }
 
 function toggleTypeFilter(type) {
@@ -392,7 +444,7 @@ function renderSearch() {
   const hits = results.reduce((n, d) => n + d.events.length, 0);
   dayView.hidden = true;
   box.hidden = false;
-  box.innerHTML = `
+  patchHTML(box, `
     <p class="search-results__count">在 ${results.length} 天中找到 ${hits} 個項目</p>
     ${
       results.length
@@ -402,14 +454,14 @@ function renderSearch() {
         <section class="search-day">
           <button type="button" class="search-day__head" data-day="${dayIndexOf(day)}">
             <span class="search-day__num">Day ${dayIndexOf(day)}</span>
-            <span class="search-day__title">${esc(formatShortDate(day.date))} ${esc(day.title)}</span>
+            <span class="search-day__title">${highlightText(esc(formatShortDate(day.date)) + ' ' + esc(day.title), esc(searchQuery))}</span>
             <span class="search-day__go" aria-hidden="true">→</span>
           </button>
           <ul class="search-hits">
             ${day.events
               .map(
                 (e) => `<li><span class="search-hits__time">${esc(e.time || '—')}</span>
-                        <span>${typeMeta(e.type).icon} ${esc(e.title)}</span></li>`
+                        <span>${typeMeta(e.type).icon} ${highlightText(esc(e.title), esc(searchQuery))}</span></li>`
               )
               .join('')}
           </ul>
@@ -417,7 +469,7 @@ function renderSearch() {
             )
             .join('')
         : '<p class="empty-state">沒有符合的行程。試試地名、日文名稱或「巴士」「纜車」。</p>'
-    }`;
+    }`);
 }
 
 function renderTimeline() {
@@ -425,12 +477,15 @@ function renderTimeline() {
   const events = filterEventsByType(sortEventsByTime(day.events), state.typeFilters);
   const list = $('timeline');
   const empty = $('timeline-empty');
+  const now = new Date();
+  const isToday = day.date === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const nowMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : null;
 
   empty.hidden = events.length > 0;
-  list.innerHTML = events.map((event) => renderEvent(event)).join('');
+  patchHTML(list, events.map((event) => renderEvent(event, nowMinutes)).join(''));
 }
 
-function renderEvent(event) {
+function renderEvent(event, nowMinutes = null) {
   const risk = resolveEventRisk(event, state.bufferEdits, policy());
   const meta = typeMeta(event.type);
   const cost = eventCostPerPerson(event, state.partySize);
@@ -471,8 +526,10 @@ function renderEvent(event) {
     sourceBits.push(`<a class="source-link" href="${esc(event.sourceUrl)}" target="_blank" rel="noopener">官方頁面 ↗</a>`);
   }
 
+  const isPast = nowMinutes != null && timeToMinutes(event.time) != null && timeToMinutes(event.time) < nowMinutes;
+
   return `
-    <li class="event event--${esc(event.type)}" id="event-${esc(event.id)}">
+    <li class="event event--${esc(event.type)}${isPast ? ' event--past' : ''}" id="event-${esc(event.id)}">
       <div class="event__gutter" aria-hidden="true"><span class="event__dot"></span></div>
       <div class="event__body">
         <p class="event__head">
@@ -501,11 +558,11 @@ function renderEvent(event) {
 }
 
 function renderOperateCaveat() {
-  $('operate-caveat').innerHTML = `
+  patchHTML($('operate-caveat'), `
     <strong>資料狀態</strong>：${esc(TRIP_META.caveat)}
     最後查核 ${esc(TRIP_META.lastChecked)}，來源
     <a href="${esc(TRIP_META.dataSourceUrl)}" target="_blank" rel="noopener">${esc(TRIP_META.dataSource)} ↗</a>。
-    本頁不連接任何即時班次或雪況資料。`;
+    本頁不連接任何即時班次或雪況資料。`);
 }
 
 /* ═══════════════════════════════════════════
@@ -530,7 +587,7 @@ function renderPlan() {
 
 function renderRiskList() {
   const risks = collectTransferRisks(tripDays, state.bufferEdits, policy());
-  $('risk-list').innerHTML = risks.length
+  patchHTML($('risk-list'), risks.length
     ? risks
         .map(
           ({ day, event, level, bufferMinutes }) => `
@@ -553,12 +610,12 @@ function renderRiskList() {
       </li>`
         )
         .join('')
-    : '<li class="empty-state">目前沒有標記風險的轉乘。</li>';
+    : '<li class="empty-state">目前沒有標記風險的轉乘。</li>');
 }
 
 function renderLodgingList() {
   const rows = collectLodgingToConfirm(tripDays, {});
-  $('lodging-list').innerHTML = rows
+  patchHTML($('lodging-list'), rows
     .map(
       (row) => `
     <li class="lodging-row">
@@ -582,11 +639,11 @@ function renderLodgingList() {
       </label>
     </li>`
     )
-    .join('');
+    .join(''));
 }
 
 function renderOverview() {
-  $('overview-list').innerHTML = tripDays
+  patchHTML($('overview-list'), tripDays
     .map((day) => {
       const s = summarizeDay(day, state.partySize, state.bufferEdits, policy());
       return `
@@ -605,11 +662,11 @@ function renderOverview() {
         </button>
       </li>`;
     })
-    .join('');
+    .join(''));
 }
 
 function renderPlanOptions() {
-  $('plan-options').innerHTML = TRANSFER_PLANS.map(
+  patchHTML($('plan-options'), TRANSFER_PLANS.map(
     (plan) => `
     <li class="plan-option">
       <p class="plan-option__head">
@@ -620,11 +677,11 @@ function renderPlanOptions() {
       <p class="plan-option__pro">＋ ${esc(plan.pros)}</p>
       <p class="plan-option__con">− ${esc(plan.cons)}</p>
     </li>`
-  ).join('');
+  ).join(''));
 }
 
 function renderPlaybook() {
-  $('playbook').innerHTML = CONTINGENCY_PLAYBOOK.map(
+  patchHTML($('playbook'), CONTINGENCY_PLAYBOOK.map(
     (item) => `
     <li class="playbook__item">
       <details>
@@ -632,7 +689,7 @@ function renderPlaybook() {
         <ul>${item.actions.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
       </details>
     </li>`
-  ).join('');
+  ).join(''));
 }
 
 /* ═══════════════════════════════════════════
@@ -647,7 +704,7 @@ function renderBudget() {
   $('budget-group-total').textContent = formatCurrency(totals.group);
   $('budget-party-label').textContent = String(totals.partySize);
 
-  $('budget-grid').innerHTML = categories
+  patchHTML($('budget-grid'), categories
     .map(
       (cat) => `
     <div class="budget-item${cat.edited ? ' budget-item--edited' : ''}">
@@ -664,13 +721,28 @@ function renderBudget() {
       </span>
     </div>`
     )
-    .join('');
+    .join(''));
+
+  // Budget proportion bar
+  const totalBudget = totals.perPerson;
+  const barHTML = totalBudget > 0 ? `
+    <div class="budget-bar" aria-label="預算分類比例">
+      ${categories.filter(c => c.estimatedYen > 0).map(cat => {
+        const pct = ((cat.estimatedYen / totalBudget) * 100).toFixed(1);
+        return `<div class="budget-bar__seg" style="flex:${cat.estimatedYen}" title="${esc(cat.label)} ${esc(pct)}%">
+          <span class="budget-bar__label">${cat.icon} ${esc(pct)}%</span>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+  
+  const barEl = $('budget-bar-container');
+  if (barEl) barEl.innerHTML = barHTML;
 
   const breakdown = tripDays
     .map((day) => ({ day, cost: computeDayBudget(day.events, state.partySize) }))
     .filter((row) => row.cost > 0);
 
-  $('cost-breakdown').innerHTML = breakdown.length
+  patchHTML($('cost-breakdown'), breakdown.length
     ? breakdown
         .map(
           ({ day, cost }) => `
@@ -682,7 +754,7 @@ function renderBudget() {
       </li>`
         )
         .join('')
-    : '<li class="empty-state">行程中沒有標註金額的項目。</li>';
+    : '<li class="empty-state">行程中沒有標註金額的項目。</li>');
 
   const itineraryTotal = computeItineraryCost(tripDays, state.partySize);
   $('itinerary-cost-total').textContent =
@@ -700,7 +772,7 @@ function renderFieldKit() {
 
   const { destinations, phrases } = searchFieldContent(DESTINATION_CARDS, PHRASE_CATEGORIES, fieldQuery);
 
-  $('dest-cards').innerHTML = destinations.length
+  patchHTML($('dest-cards'), destinations.length
     ? destinations
         .map(
           (dest) => `
@@ -712,7 +784,7 @@ function renderFieldKit() {
       </button>`
         )
         .join('')
-    : '<p class="empty-state">沒有符合的地點。</p>';
+    : '<p class="empty-state">沒有符合的地點。</p>');
 
   $('speech-note').textContent = speechSupported
     ? '按 🔊 用日語念出來，音量開大直接放給對方聽（語音由瀏覽器提供，離線是否可用依裝置而定）。按 ⤢ 可放大文字給對方看。'
@@ -721,22 +793,22 @@ function renderFieldKit() {
   const showingSearch = Boolean(fieldQuery.trim());
   $('phrase-cats').hidden = showingSearch;
   if (!showingSearch) {
-    $('phrase-cats').innerHTML = PHRASE_CATEGORIES.map((cat) => {
+    patchHTML($('phrase-cats'), PHRASE_CATEGORIES.map((cat) => {
       const on = cat.id === activePhraseCat;
       return `<button type="button" class="chip${on ? ' chip--active' : ''}" role="tab"
                aria-selected="${on}" data-phrase-cat="${esc(cat.id)}">${cat.icon} ${esc(cat.label)}</button>`;
-    }).join('');
+    }).join(''));
   }
 
   const list = showingSearch
     ? phrases
     : (PHRASE_CATEGORIES.find((c) => c.id === activePhraseCat) || PHRASE_CATEGORIES[0]).phrases;
 
-  $('phrase-list').innerHTML = list.length
+  patchHTML($('phrase-list'), list.length
     ? list.map((phrase) => renderPhrase(phrase)).join('')
-    : '<li class="empty-state">沒有符合的短句。</li>';
+    : '<li class="empty-state">沒有符合的短句。</li>');
 
-  $('emergency-list').innerHTML = EMERGENCY_CONTACTS.map(
+  patchHTML($('emergency-list'), EMERGENCY_CONTACTS.map(
     (contact) => `
     <li class="emergency-item">
       <span class="emergency-item__icon" aria-hidden="true">${contact.icon}</span>
@@ -746,28 +818,28 @@ function renderFieldKit() {
       </span>
       <a class="emergency-item__link" href="tel:${esc(contact.number.replace(/[^+\d]/g, ''))}">${esc(contact.number)}</a>
     </li>`
-  ).join('');
+  ).join(''));
 
-  $('official-links').innerHTML = OFFICIAL_LINKS.map(
+  patchHTML($('official-links'), OFFICIAL_LINKS.map(
     (link) => `
     <li class="official-link-item">
       <a href="${esc(link.url)}" target="_blank" rel="noopener">${esc(link.label)}</a>
     </li>`
-  ).join('');
+  ).join(''));
 
-  $('live-status').innerHTML = LIVE_DATA_SOURCES.map(
+  patchHTML($('live-status'), LIVE_DATA_SOURCES.map(
     (src) => `
     <li class="live-status__item">
       <span>${esc(src.label)}</span>
       <span class="pill pill--offline">未連接</span>
     </li>`
-  ).join('');
+  ).join(''));
 
-  $('source-caveat').innerHTML = `
+  patchHTML($('source-caveat'), `
     <strong>資料來源</strong><br />
     擷取時間：${esc(TRIP_META.dataSnapshot)}（最後查核 ${esc(TRIP_META.lastChecked)}）<br />
     行程事實改編自 <a href="${esc(TRIP_META.dataSourceUrl)}" target="_blank" rel="noopener">${esc(TRIP_META.dataSource)} ↗</a><br />
-    ${esc(TRIP_META.caveat)}`;
+    ${esc(TRIP_META.caveat)}`);
 }
 
 function renderPhrase(phrase) {
@@ -780,6 +852,8 @@ function renderPhrase(phrase) {
         <p class="phrase-item__roma">${esc(phrase.roma)}</p>
       </div>
       <div class="phrase-item__actions">
+        <button type="button" class="icon-btn" data-copy="${payload}"
+                aria-label="複製「${esc(phrase.zh)}」的日文">📋</button>
         <button type="button" class="icon-btn" data-zoom-ja="${payload}" data-zoom-zh="${esc(phrase.zh)}"
                 aria-label="放大顯示「${esc(phrase.zh)}」的日文">⤢</button>
         <button type="button" class="icon-btn" data-speak="${payload}"
@@ -967,6 +1041,42 @@ function stepDay(delta) {
 }
 
 function wireEvents() {
+  // 深色模式
+  const THEME_KEY = 'trave_dec_theme';
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  }
+  function initTheme() {
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch {}
+  }
+  initTheme();
+  const themeToggle = $('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current === 'dark') applyTheme('light');
+      else if (current === 'light') applyTheme('dark');
+      else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'light' : 'dark');
+      }
+    });
+  }
+
+  // Track IME composition to prevent DOM updates during input
+  document.addEventListener('compositionstart', (e) => {
+    if (e.target) e.target.dataset._composing = '1';
+  });
+  document.addEventListener('compositionend', (e) => {
+    if (e.target) delete e.target.dataset._composing;
+  });
+
   // 分頁
   document.querySelector('.tab-bar').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-tab]');
@@ -997,6 +1107,16 @@ function wireEvents() {
   });
   $('day-prev').addEventListener('click', () => stepDay(-1));
   $('day-next').addEventListener('click', () => stepDay(1));
+  
+  const btnToday = $('btn-today');
+  if (btnToday) {
+    btnToday.addEventListener('click', () => {
+      const now = new Date();
+      const todayStamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const todayDay = tripDays.find(d => d.date === todayStamp);
+      if (todayDay) goToDay(dayIndexOf(todayDay));
+    });
+  }
 
   // 搜尋
   $('search-input').addEventListener('input', (e) => {
@@ -1116,6 +1236,11 @@ function wireEvents() {
     renderFieldKit();
   });
   $('phrase-list').addEventListener('click', (e) => {
+    const copyBtn = e.target.closest('[data-copy]');
+    if (copyBtn) {
+      navigator.clipboard.writeText(copyBtn.dataset.copy).then(() => toast('已複製')).catch(() => toast('複製失敗'));
+      return;
+    }
     const speakBtn = e.target.closest('[data-speak]');
     if (speakBtn) {
       speak(speakBtn.dataset.speak);
@@ -1135,6 +1260,12 @@ function wireEvents() {
   $('fullscreen-close').addEventListener('click', closeCard);
   $('fullscreen-card').addEventListener('click', (e) => {
     if (e.target.id === 'fullscreen-card') closeCard();
+  });
+  $('fc-ja').addEventListener('click', (e) => {
+    const text = e.target.textContent;
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => toast('已複製')).catch(() => toast('複製失敗'));
+    }
   });
 
   // 匯出 / 匯入 / 分享 / 重置
@@ -1180,6 +1311,43 @@ function wireEvents() {
       stepDay(1);
     }
   });
+
+  // ── 左右 swipe 手勢切換天數 ──
+  {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    const SWIPE_THRESHOLD = 50;
+    const SWIPE_TIME_LIMIT = 400;
+    const SWIPE_ANGLE_LIMIT = 30; // degrees from horizontal
+
+    const mainContent = $('main-content');
+    mainContent.addEventListener('touchstart', (e) => {
+      if (state.activeTab !== 'operate') return;
+      const touch = e.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    mainContent.addEventListener('touchend', (e) => {
+      if (state.activeTab !== 'operate') return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      const dt = Date.now() - touchStartTime;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (dt > SWIPE_TIME_LIMIT || absDx < SWIPE_THRESHOLD) return;
+      // Check angle is mostly horizontal
+      const angle = Math.atan2(absDy, absDx) * (180 / Math.PI);
+      if (angle > SWIPE_ANGLE_LIMIT) return;
+
+      if (dx < 0) stepDay(1);  // swipe left → next day
+      else stepDay(-1);        // swipe right → prev day
+    }, { passive: true });
+  }
 
   // 離線狀態
   const syncOnline = () => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="2307 志賀高原滑雪旅行 — 10 日行程駕駛艙，離線可用的行前與現場工具" />
   <meta name="theme-color" content="#1b1a18" />
-  <meta name="color-scheme" content="light" />
+  <meta name="color-scheme" content="light dark" />
   <title>Trave_Dec — 2307 志賀高原滑雪旅行</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛷️</text></svg>" />
@@ -25,6 +25,7 @@
       </div>
       <div class="top-bar__right">
         <span id="offline-badge" class="offline-badge" role="status" aria-live="polite" hidden>離線模式</span>
+        <button type="button" class="top-bar__theme-btn" id="theme-toggle" aria-label="切換深色模式" title="切換深色模式">🌓</button>
         <div class="party-control">
           <span class="party-control__label" id="party-label" aria-hidden="true">👥</span>
           <button type="button" class="party-control__btn" id="party-minus" aria-label="減少一位團員">−</button>
@@ -53,6 +54,7 @@
           <button type="button" class="day-rail__arrow" id="day-prev" aria-label="前一天">‹</button>
           <div class="day-rail__track" id="day-nav" role="group" aria-label="第幾天"></div>
           <button type="button" class="day-rail__arrow" id="day-next" aria-label="後一天">›</button>
+          <button type="button" class="btn-today" id="btn-today" aria-label="跳回今天" hidden>📍 今天</button>
         </nav>
 
         <div class="filter-bar">
@@ -143,6 +145,8 @@
             <p class="totals__value" id="budget-group-total">¥0</p>
           </div>
         </div>
+
+        <div id="budget-bar-container"></div>
 
         <div class="budget-grid" id="budget-grid"></div>
 
@@ -245,7 +249,7 @@
     <div class="fullscreen-card" id="fullscreen-card" role="dialog" aria-modal="true"
          aria-labelledby="fc-ja" hidden>
       <button type="button" class="fullscreen-card__close" id="fullscreen-close" aria-label="關閉大字卡">✕</button>
-      <p class="fullscreen-card__ja" id="fc-ja"></p>
+      <p class="fullscreen-card__ja" id="fc-ja" data-copy-card title="點擊複製"></p>
       <p class="fullscreen-card__zh" id="fc-zh"></p>
       <p class="fullscreen-card__address" id="fc-address"></p>
       <a class="fullscreen-card__phone" id="fc-phone" href="#" hidden></a>

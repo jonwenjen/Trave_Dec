@@ -42,7 +42,7 @@ Vite `base` 已設為 `/Trave_Dec/`，對應 GitHub Pages 專案頁路徑。
 ## 歸屬（attribution）
 
 - **專案領導**：Hermes Agent（排程、協調、調研整合、驗證與發布）
-- **主要實作**：Claude Code CLI — 實際選用模型 `claude-opus-5`
+- **主要實作**：Claude Code CLI — 初始版 `claude-opus-5`；UX 改進（離線快取、深色模式、滑動手勢等）由 agy CLI — `claude-opus-4-6-thinking`
 - **調研／審查**：Gemini CLI — `gemini-3.8-flash-high`（thinking）
 
 ## 路線圖（Roadmap）

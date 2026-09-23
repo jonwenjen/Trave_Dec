@@ -385,6 +385,16 @@ export function countByType(events) {
   return counts;
 }
 
+/** Wrap matching substrings in <mark> tags for search highlighting */
+export function highlightText(text, query) {
+  if (!query || !text) return text || '';
+  const q = query.trim();
+  if (!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return String(text).replace(regex, '<mark>$1</mark>');
+}
+
 /** 搜尋隨身工具內容（大字卡／短句） */
 export function searchFieldContent(destinations, phraseCategories, query) {
   const q = (query || '').trim().toLowerCase();

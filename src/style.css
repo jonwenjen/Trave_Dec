@@ -81,6 +81,70 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ── 深色模式 ─────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --snow-0: #1b1a18;
+    --snow-50: #222120;
+    --snow-100: #2b2926;
+    --snow-200: #3d3a35;
+    --snow-300: #504c45;
+    --char-600: #a9a294;
+    --char-700: #c8c2b5;
+    --char-800: #e5e0d6;
+    --char-900: #f5f2ec;
+    --pine-300: #5a8373;
+    --pine-500: #6db39a;
+    --pine-600: #5a9e85;
+    --pine-700: #8ac4ad;
+    --vermilion-400: #d4705c;
+    --vermilion-500: #e08068;
+    --vermilion-600: #c46a56;
+    --brass-400: #d4a93d;
+    --brass-500: #c49a30;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --snow-0: #1b1a18;
+  --snow-50: #222120;
+  --snow-100: #2b2926;
+  --snow-200: #3d3a35;
+  --snow-300: #504c45;
+  --char-600: #a9a294;
+  --char-700: #c8c2b5;
+  --char-800: #e5e0d6;
+  --char-900: #f5f2ec;
+  --pine-300: #5a8373;
+  --pine-500: #6db39a;
+  --pine-600: #5a9e85;
+  --pine-700: #8ac4ad;
+  --vermilion-400: #d4705c;
+  --vermilion-500: #e08068;
+  --vermilion-600: #c46a56;
+  --brass-400: #d4a93d;
+  --brass-500: #c49a30;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .tab-bar { background: rgba(34, 33, 32, 0.96); }
+  :root:not([data-theme="light"]) .now-card { background: #172e29; }
+  :root:not([data-theme="light"]) .fullscreen-card { background: #111110; }
+}
+
+[data-theme="dark"] .tab-bar { background: rgba(34, 33, 32, 0.96); }
+[data-theme="dark"] .now-card { background: #172e29; }
+[data-theme="dark"] .fullscreen-card { background: #111110; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -227,6 +291,19 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
   border-radius: 999px;
   white-space: nowrap;
 }
+
+.top-bar__theme-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--snow-100);
+  font-size: var(--text-md);
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  opacity: 0.8;
+}
+.top-bar__theme-btn:hover { opacity: 1; background: rgba(255, 255, 255, 0.14); }
 
 .party-control {
   display: flex;
@@ -472,6 +549,21 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
 }
 .day-rail__track::-webkit-scrollbar { display: none; }
 
+.btn-today {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--vermilion-400);
+  border-radius: 999px;
+  background: var(--snow-0);
+  color: var(--vermilion-500);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s var(--ease);
+}
+.btn-today:hover { background: var(--vermilion-500); color: #fff; }
+.btn-today[hidden] { display: none; }
+
 .day-chip {
   position: relative;
   flex: 0 0 auto;
@@ -602,6 +694,13 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
   color: var(--snow-0);
 }
 
+mark {
+  background: rgba(168, 121, 31, 0.25);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
 /* 搜尋結果 */
 .search-results { margin-bottom: var(--sp-6); }
 
@@ -674,6 +773,14 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
   background: var(--snow-200);
 }
 .event:last-child .event__gutter::before { display: none; }
+
+.event--past {
+  opacity: 0.5;
+}
+.event--past .event__dot {
+  background: var(--snow-200) !important;
+  border-color: var(--snow-300) !important;
+}
 
 .event__dot {
   position: relative;
@@ -1192,6 +1299,41 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
 
 .totals__item--muted .totals__value { color: var(--char-600); font-size: var(--text-2xl); }
 
+.budget-bar {
+  display: flex;
+  height: 1.5rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--sp-4);
+  border: 1px solid var(--snow-200);
+}
+
+.budget-bar__seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.budget-bar__seg:nth-child(8n+1) { background: rgba(47, 90, 76, 0.2); }
+.budget-bar__seg:nth-child(8n+2) { background: rgba(47, 90, 76, 0.35); }
+.budget-bar__seg:nth-child(8n+3) { background: rgba(168, 121, 31, 0.2); }
+.budget-bar__seg:nth-child(8n+4) { background: rgba(168, 121, 31, 0.35); }
+.budget-bar__seg:nth-child(8n+5) { background: rgba(184, 64, 44, 0.15); }
+.budget-bar__seg:nth-child(8n+6) { background: rgba(184, 64, 44, 0.3); }
+.budget-bar__seg:nth-child(8n+7) { background: var(--snow-200); }
+.budget-bar__seg:nth-child(8n+8) { background: var(--snow-300); }
+
+.budget-bar__label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 4px;
+  color: var(--char-800);
+}
+
 .budget-grid { display: grid; gap: var(--sp-2); }
 
 .budget-item {
@@ -1567,6 +1709,72 @@ h1, h2, h3, h4 { line-height: 1.25; color: var(--char-900); font-weight: 600; }
 @media (min-width: 64rem) {
   :root { --max-content: 54rem; }
   .dest-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── 觸控熱區 ≥ 44px ─────────────────────── */
+
+@media (pointer: coarse) {
+  .day-chip {
+    min-width: 3.25rem;
+    min-height: 3.25rem; /* 52px ≥ 44px */
+  }
+
+  .day-rail__arrow {
+    width: 2.75rem;
+    min-height: 2.75rem; /* 44px */
+  }
+
+  .chip {
+    min-height: 2.75rem;
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .tab-bar__btn {
+    min-height: 3.25rem; /* already met, reinforce */
+  }
+
+  .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem; /* 44px */
+  }
+
+  .search-bar__clear {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .party-control__btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .btn {
+    min-height: 2.75rem;
+  }
+
+  .playbook__item summary {
+    min-height: 2.75rem;
+  }
+
+  .event__note-editor summary {
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .risk-row__jump {
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .overview-row {
+    min-height: 2.75rem;
+  }
+
+  .cost-row__jump {
+    min-height: 2.75rem;
+  }
 }
 
 /* ── 列印 ───────────────────────────────── */

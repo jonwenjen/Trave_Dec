@@ -5,7 +5,7 @@
  * 不做背景同步，也不快取任何第三方網域（官方連結仍需連網）。
  */
 
-const CACHE = 'trave-dec-v1';
+const CACHE = 'trave-dec-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -48,7 +48,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 靜態資源：先給快取，同時在背景更新
+  // 靜態資源：Cache-first (先給快取，沒有再連網並快取)
+  const isStaticAsset = url.pathname.includes('/assets/') || url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf|eot)$/i);
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(request).then((hit) => {
+        if (hit) return hit;
+        return fetch(request).then((response) => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // 其他同源請求 (stale-while-revalidate)
   event.respondWith(
     caches.match(request).then((hit) => {
       const network = fetch(request)
