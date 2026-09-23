@@ -72,6 +72,7 @@
         <div id="search-results" class="search-results" hidden></div>
 
         <div id="day-view">
+          <div id="day-arrival-block" class="day-arrival-block" hidden></div>
           <ol class="timeline" id="timeline" aria-label="當日行程"></ol>
           <p class="empty-state" id="timeline-empty" hidden>這一天沒有符合篩選條件的行程。</p>
         </div>
@@ -119,9 +120,11 @@
         </section>
 
         <section class="block" aria-labelledby="plans-heading">
-          <h3 class="block__title" id="plans-heading">12/15 友人上山作戰板</h3>
-          <p class="block__lede">三個方案的取捨。抵達時間為規劃估算，26-27 冬季時刻公布後需重新核對。</p>
-          <ul class="plan-options" id="plan-options"></ul>
+          <h3 class="block__title" id="plans-heading">12/15 朋友抵達方案（成田 T3 06:35 → 2307）</h3>
+          <p class="block__lede">
+            5 位友人預計 12/15（二）06:35 抵達 NRT T3，目標於 <strong>19:00 前</strong> 抵達 Hotel &amp; Onsen 2307。以下為 4 條路線鏈比較，計程車/包車費用依全團人數（<span id="arrival-party-label">6</span> 人）自動分攤。
+          </p>
+          <div class="arrival-options" id="plan-options"></div>
         </section>
 
         <section class="block" aria-labelledby="playbook-heading">
@@ -189,6 +192,35 @@
           <p class="block__lede" id="speech-note"></p>
           <div class="chip-row" id="phrase-cats" role="tablist" aria-label="短句分類"></div>
           <ul class="phrase-list" id="phrase-list"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="dining-heading">
+          <h3 class="block__title" id="dining-heading">🍽️ 更多吃喝（餐廳・居酒屋・酒吧）</h3>
+          <p class="block__lede">志賀高原（橫手山・熊之湯・一の瀬・焼額山・奧志賀）與沿途城市（高崎・佐久平・長野・橫濱）吃喝指南。依區域與分類篩選，點 ⤢ 可放大店名給店家看。</p>
+
+          <div class="dining-filter-controls">
+            <div class="chip-row" id="dining-cat-filters" role="tablist" aria-label="吃喝分類">
+              <button type="button" class="chip chip--active" data-dining-cat="all" aria-pressed="true">全部</button>
+              <button type="button" class="chip" data-dining-cat="eat" aria-pressed="false">🍜 吃（餐廳・定食・拉麵・甜點）</button>
+              <button type="button" class="chip" data-dining-cat="drink" aria-pressed="false">🍺 喝／酒吧（居酒屋・精釀・酒廊）</button>
+            </div>
+            <div class="dining-subfilters">
+              <label class="field field--inline">
+                <span class="field__label">區域</span>
+                <select id="dining-region-select" class="field__select" aria-label="依區域篩選吃喝">
+                  <option value="all">全部區域</option>
+                </select>
+              </label>
+              <div class="search-bar search-bar--compact">
+                <span class="search-bar__icon" aria-hidden="true">🔍</span>
+                <input type="search" id="dining-search-input" class="search-bar__input"
+                       placeholder="搜尋店名、料理、地酒、招牌..." aria-label="搜尋吃喝" autocomplete="off" />
+                <button type="button" class="search-bar__clear" id="dining-search-clear" aria-label="清除搜尋" hidden>✕</button>
+              </div>
+            </div>
+          </div>
+          <p class="dining-count" id="dining-count"></p>
+          <ul class="dining-list" id="dining-list"></ul>
         </section>
 
         <section class="block" aria-labelledby="emergency-heading">

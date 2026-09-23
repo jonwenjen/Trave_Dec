@@ -769,3 +769,226 @@ export function generateICS(tripMeta, days, options) {
     .map(foldICSLine)
     .join('\r\n') + '\r\n';
 }
+
+/* ═══════════════════════════════════════════
+   朋友抵達方案 (12/15 NRT T3 → 2307)
+   ═══════════════════════════════════════════ */
+
+/**
+ * 計算預估抵達時刻對目標時刻（預設 19:00 晚餐前）的緩衝分鐘數與達標狀態。
+ * 達標標 ✓，未達標標 ⚠。
+ *
+ * @param {string} arrivalTime - "HH:MM" 格式，例如 "15:45"
+ * @param {string} [targetTime='19:00'] - 目標抵達時刻
+ * @returns {{
+ *   arrivalTime: string,
+ *   targetTime: string,
+ *   arrivalMinutes: number|null,
+ *   targetMinutes: number|null,
+ *   bufferMinutes: number|null,
+ *   isMet: boolean,
+ *   statusSymbol: '✓'|'⚠',
+ *   formattedBuffer: string,
+ *   statusText: string
+ * }}
+ */
+export function calculateArrivalBuffer(arrivalTime, targetTime = '19:00') {
+  const arrM = timeToMinutes(arrivalTime);
+  const tgtM = timeToMinutes(targetTime);
+
+  if (arrM == null || tgtM == null) {
+    return {
+      arrivalTime: String(arrivalTime || ''),
+      targetTime: String(targetTime || ''),
+      arrivalMinutes: null,
+      targetMinutes: null,
+      bufferMinutes: null,
+      isMet: false,
+      statusSymbol: '⚠',
+      formattedBuffer: '未估算',
+      statusText: '時間待確認',
+    };
+  }
+
+  const bufferMinutes = tgtM - arrM;
+  const isMet = bufferMinutes >= 0;
+  const statusSymbol = isMet ? '✓' : '⚠';
+
+  let formattedBuffer = '';
+  if (isMet) {
+    const hours = Math.floor(bufferMinutes / 60);
+    const mins = bufferMinutes % 60;
+    const timeText = hours > 0 ? `${hours} 小時 ${mins} 分` : `${mins} 分鐘`;
+    formattedBuffer = `+${bufferMinutes} 分鐘（餘裕 ${timeText}）`;
+  } else {
+    const overdue = Math.abs(bufferMinutes);
+    const hours = Math.floor(overdue / 60);
+    const mins = overdue % 60;
+    const timeText = hours > 0 ? `${hours} 小時 ${mins} 分` : `${mins} 分鐘`;
+    formattedBuffer = `-${overdue} 分鐘（超時 ${timeText}）`;
+  }
+
+  return {
+    arrivalTime,
+    targetTime,
+    arrivalMinutes: arrM,
+    targetMinutes: tgtM,
+    bufferMinutes,
+    isMet,
+    statusSymbol,
+    formattedBuffer,
+    statusText: isMet ? '達標（19:00 前抵達）' : '未達標（超過 19:00）',
+  };
+}
+
+/**
+ * 計算抵達方案的每人與全團費用，計程車/包車項目支援人數分攤。
+ *
+ * @param {object} option - 抵達方案物件，含 legs
+ * @param {number} [partySize=5] - 團員人數
+ * @returns {{
+ *   perPerson: number,
+ *   group: number,
+ *   partySize: number,
+ *   legCosts: Array<{ id: string, name: string, perPerson: number, total: number }>
+ * }}
+ */
+export function computeArrivalOptionCost(option, partySize = 5) {
+  const size = Math.max(1, Math.round(Number(partySize) || 1));
+  const legs = (option && option.legs) || [];
+
+  let totalPerPerson = 0;
+  let totalGroup = 0;
+
+  const legCosts = legs.map((leg) => {
+    let legPerPerson = 0;
+    let legTotal = 0;
+
+    if (leg.costTotal != null) {
+      legTotal = Math.round(Number(leg.costTotal) || 0);
+      legPerPerson = Math.round(legTotal / size);
+    } else if (leg.perPerson === false && leg.costYen != null) {
+      legTotal = Math.round(Number(leg.costYen) || 0);
+      legPerPerson = Math.round(legTotal / size);
+    } else {
+      const unit = Math.round(Number(leg.costYen) || 0);
+      legPerPerson = unit;
+      legTotal = unit * size;
+    }
+
+    totalPerPerson += legPerPerson;
+    totalGroup += legTotal;
+
+    return {
+      id: leg.id,
+      name: leg.name,
+      perPerson: legPerPerson,
+      total: legTotal,
+    };
+  });
+
+  return {
+    perPerson: totalPerPerson,
+    group: totalGroup,
+    partySize: size,
+    legCosts,
+  };
+}
+
+/**
+ * 組合方案的完整摘要，包含總時長、每人/全團費用、緩衝與達標判定。
+ *
+ * @param {object} option
+ * @param {number} [partySize=5]
+ * @param {string} [targetTime='19:00']
+ */
+export function computeArrivalOptionSummary(option, partySize = 5, targetTime = '19:00') {
+  if (!option) return null;
+  const tgt = targetTime || option.targetTime || '19:00';
+  const bufferInfo = calculateArrivalBuffer(option.estimatedArrival, tgt);
+  const costInfo = computeArrivalOptionCost(option, partySize);
+
+  let durationMinutes = option.durationMinutes;
+  if (durationMinutes == null && option.startTime && option.estimatedArrival) {
+    const s = timeToMinutes(option.startTime);
+    const e = timeToMinutes(option.estimatedArrival);
+    if (s != null && e != null) durationMinutes = e - s;
+  }
+  durationMinutes = durationMinutes || 0;
+
+  const durH = Math.floor(durationMinutes / 60);
+  const durM = durationMinutes % 60;
+  const formattedDuration = durH > 0 ? `${durH} 小時 ${durM} 分` : `${durM} 分鐘`;
+
+  return {
+    ...option,
+    partySize: costInfo.partySize,
+    costPerPerson: costInfo.perPerson,
+    costGroup: costInfo.group,
+    legCosts: costInfo.legCosts,
+    bufferMinutes: bufferInfo.bufferMinutes,
+    isMet: bufferInfo.isMet,
+    statusSymbol: bufferInfo.statusSymbol,
+    formattedBuffer: bufferInfo.formattedBuffer,
+    statusText: bufferInfo.statusText,
+    targetTime: tgt,
+    durationMinutes,
+    formattedDuration,
+  };
+}
+
+/* ═══════════════════════════════════════════
+   吃喝篩選 (Dining & Drinks)
+   ═══════════════════════════════════════════ */
+
+/**
+ * 依地區、類別與關鍵字篩選餐廳／居酒屋／酒吧。
+ *
+ * @param {Array} places
+ * @param {{ region?: string, category?: string, query?: string }} [filters]
+ * @returns {Array}
+ */
+export function filterDiningPlaces(places, filters = {}) {
+  const list = places || [];
+  const { region = 'all', category = 'all', query = '' } = filters;
+  const q = (query || '').trim().toLowerCase();
+
+  return list.filter((place) => {
+    if (category !== 'all' && place.category !== category) {
+      return false;
+    }
+    if (region !== 'all' && place.region !== region) {
+      return false;
+    }
+    if (q) {
+      const matchFields = [
+        place.name,
+        place.nameJa,
+        place.region,
+        place.genre,
+        place.notes,
+        place.source,
+      ];
+      const found = matchFields.some(
+        (field) => typeof field === 'string' && field.toLowerCase().includes(q)
+      );
+      if (!found) return false;
+    }
+    return true;
+  });
+}
+
+/**
+ * 從吃喝清單中擷取所有不重複的區域標籤。
+ *
+ * @param {Array} places
+ * @returns {string[]}
+ */
+export function getDiningRegions(places) {
+  const set = new Set();
+  for (const p of places || []) {
+    if (p && p.region) set.add(p.region);
+  }
+  return Array.from(set);
+}
+

@@ -1777,6 +1777,487 @@ mark {
   }
 }
 
+/* ═══════════════════════════════════════════════
+   12/15 朋友抵達方案 (Friend Arrival Options)
+   ═══════════════════════════════════════════════ */
+
+.day-arrival-block {
+  margin-bottom: var(--sp-4);
+}
+
+.cockpit-arrival-card {
+  background: var(--snow-0);
+  border: 1.5px solid var(--pine-300);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-4);
+}
+
+.cockpit-arrival-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.cockpit-arrival-card__tag {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--pine-600);
+  letter-spacing: 0.05em;
+  margin-bottom: var(--sp-1);
+}
+
+.cockpit-arrival-card__title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--char-900);
+  line-height: 1.35;
+}
+
+.cockpit-arrival-card__desc {
+  font-size: var(--text-sm);
+  color: var(--char-700);
+  margin-bottom: var(--sp-3);
+  line-height: 1.5;
+}
+
+.arrival-options, .cockpit-arrival-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.arrival-card {
+  background: var(--snow-0);
+  border: 1px solid var(--snow-200);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease;
+}
+
+.arrival-card--plan-a {
+  border-left: 4px solid var(--pine-500);
+}
+
+.arrival-card--plan-b {
+  border-left: 4px solid var(--pine-300);
+}
+
+.arrival-card--plan-c {
+  border-left: 4px solid var(--brass-500);
+}
+
+.arrival-card--plan-d {
+  border-left: 4px solid var(--vermilion-400);
+}
+
+.arrival-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.arrival-card__title-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.arrival-card__badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.arrival-card__badge--plan-a {
+  background: rgba(47, 90, 76, 0.15);
+  color: var(--pine-600);
+}
+
+.arrival-card__badge--plan-b {
+  background: rgba(125, 154, 140, 0.2);
+  color: var(--pine-700);
+}
+
+.arrival-card__badge--plan-c {
+  background: rgba(168, 121, 31, 0.18);
+  color: var(--brass-500);
+}
+
+.arrival-card__badge--plan-d {
+  background: rgba(184, 64, 44, 0.15);
+  color: var(--vermilion-500);
+}
+
+.arrival-card__title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--char-900);
+  line-height: 1.35;
+}
+
+.arrival-card__buffer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--sp-3);
+  font-size: var(--text-sm);
+}
+
+.arrival-buffer--met {
+  background: rgba(47, 90, 76, 0.1);
+  border: 1px solid rgba(47, 90, 76, 0.25);
+  color: var(--pine-700);
+}
+
+.arrival-buffer--unmet {
+  background: rgba(184, 64, 44, 0.1);
+  border: 1px solid rgba(184, 64, 44, 0.3);
+  color: var(--vermilion-600);
+}
+
+.arrival-card__buffer-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.arrival-status-symbol {
+  font-size: 1.15em;
+  font-weight: 800;
+}
+
+.arrival-status-label {
+  font-weight: 700;
+}
+
+.arrival-card__buffer-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.arrival-card__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+  background: var(--snow-50);
+  border: 1px solid var(--snow-200);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.arrival-card__stats .stat dt {
+  font-size: var(--text-xs);
+  color: var(--char-600);
+}
+
+.arrival-card__stats .stat dd {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--char-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-highlight {
+  color: var(--pine-600) !important;
+  font-weight: 700 !important;
+}
+
+.arrival-card__summary {
+  font-size: var(--text-xs);
+  color: var(--char-700);
+  line-height: 1.5;
+  margin-bottom: var(--sp-3);
+}
+
+.arrival-card__summary-label {
+  font-weight: 600;
+  color: var(--char-800);
+}
+
+.arrival-card__legs {
+  margin-bottom: var(--sp-3);
+  border: 1px solid var(--snow-200);
+  border-radius: var(--radius-sm);
+  background: var(--snow-50);
+  overflow: hidden;
+}
+
+.arrival-card__legs-summary {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--char-700);
+  cursor: pointer;
+  background: var(--snow-100);
+  user-select: none;
+}
+
+.arrival-leg-chain {
+  list-style: none;
+  padding: var(--sp-2) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.arrival-leg-item {
+  display: flex;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.arrival-leg-item__order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--snow-200);
+  color: var(--char-700);
+  font-weight: 700;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.arrival-leg-item__main {
+  flex: 1;
+}
+
+.arrival-leg-item__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.arrival-leg-item__time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--char-900);
+}
+
+.arrival-leg-item__name {
+  font-weight: 600;
+  color: var(--char-800);
+}
+
+.arrival-leg-item__cost {
+  color: var(--pine-600);
+  font-weight: 600;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.arrival-leg-item__stations {
+  color: var(--char-600);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: 1px;
+}
+
+.arrival-leg-item__arrow {
+  color: var(--char-400);
+}
+
+.arrival-leg-item__note {
+  color: var(--char-600);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.arrival-card__analysis {
+  margin-bottom: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.arrival-card__foot {
+  border-top: 1px dashed var(--snow-200);
+  padding-top: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.arrival-card__caveat {
+  font-size: var(--text-xs);
+  color: var(--char-600);
+  line-height: 1.5;
+}
+
+@media (max-width: 580px) {
+  .arrival-card__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   吃喝指南 (Dining & Drinks)
+   ═══════════════════════════════════════════════ */
+
+.dining-filter-controls {
+  margin-bottom: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.dining-subfilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.dining-subfilters .field {
+  flex: 1 1 12rem;
+  margin-bottom: 0;
+}
+
+.dining-subfilters .search-bar--compact {
+  flex: 2 1 16rem;
+}
+
+.dining-count {
+  font-size: var(--text-xs);
+  color: var(--char-600);
+  margin-bottom: var(--sp-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.dining-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.dining-item {
+  background: var(--snow-0);
+  border: 1px solid var(--snow-200);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.dining-item__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.dining-item__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dining-item__name {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--char-900);
+  line-height: 1.3;
+}
+
+.dining-item__ja {
+  font-size: var(--text-xs);
+  color: var(--char-600);
+  font-family: var(--font-sans);
+}
+
+.dining-item__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.pill--food {
+  background: rgba(168, 121, 31, 0.14);
+  color: var(--brass-500);
+}
+
+.pill--bar {
+  background: rgba(184, 64, 44, 0.12);
+  color: var(--vermilion-500);
+}
+
+.tag--region {
+  background: rgba(47, 90, 76, 0.1);
+  color: var(--pine-600);
+  font-size: var(--text-xs);
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.tag--genre {
+  background: var(--snow-100);
+  color: var(--char-700);
+  font-size: var(--text-xs);
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+
+.dining-item__notes {
+  font-size: var(--text-sm);
+  color: var(--char-700);
+  line-height: 1.55;
+  margin-bottom: var(--sp-2);
+}
+
+.dining-item__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--snow-100);
+}
+
+.dining-item__source-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+}
+
+.dining-item__status-note {
+  color: var(--char-600);
+}
+
+.dining-item__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-left: auto;
+}
+
 /* ── 列印 ───────────────────────────────── */
 
 @media print {

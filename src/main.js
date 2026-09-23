@@ -19,6 +19,8 @@ import {
   TRANSFER_PLANS,
   CONTINGENCY_PLAYBOOK,
   LIVE_DATA_SOURCES,
+  FRIEND_ARRIVAL_OPTIONS,
+  DINING_PLACES,
 } from './data/itinerary.js';
 import {
   TAB_IDS,
@@ -60,6 +62,11 @@ import {
   generateICS,
   buildShareURL,
   decodeShareState,
+  calculateArrivalBuffer,
+  computeArrivalOptionCost,
+  computeArrivalOptionSummary,
+  filterDiningPlaces,
+  getDiningRegions,
 } from './helpers.js';
 
 /* ═══════════════════════════════════════════
@@ -72,6 +79,9 @@ let searchQuery = '';
 let fieldQuery = '';
 let activePhraseCat = PHRASE_CATEGORIES[0].id;
 let lastFocusedBeforeDialog = null;
+let activeDiningCategory = 'all';
+let activeDiningRegion = 'all';
+let diningSearchQuery = '';
 
 const RISK_LABELS = {
   high: { label: '高風險', hint: '緩衝不足，錯過就沒有替代班次' },
@@ -294,6 +304,7 @@ function renderOperate() {
   renderDayRail();
   renderHero();
   renderNowCard();
+  renderDayArrivalBlock();
   renderTypeFilters();
   renderSearch();
   renderTimeline();
@@ -557,6 +568,149 @@ function renderEvent(event, nowMinutes = null) {
     </li>`;
 }
 
+function renderArrivalOptionCard(opt, partySize, isExpanded = true) {
+  const summary = computeArrivalOptionSummary(opt, partySize, '19:00');
+  const bufferBadgeClass = summary.isMet ? 'arrival-buffer--met' : 'arrival-buffer--unmet';
+
+  return `
+    <article class="arrival-card arrival-card--${esc(summary.id)}" id="arrival-${esc(summary.id)}">
+      <header class="arrival-card__head">
+        <div class="arrival-card__title-group">
+          <span class="arrival-card__badge arrival-card__badge--${esc(summary.id)}">${esc(summary.badge)}</span>
+          <h4 class="arrival-card__title">${esc(summary.name)}</h4>
+        </div>
+        <div class="arrival-card__pills">
+          ${statusPill(summary.status)}
+        </div>
+      </header>
+
+      <div class="arrival-card__buffer-bar ${bufferBadgeClass}">
+        <div class="arrival-card__buffer-status">
+          <span class="arrival-status-symbol" aria-hidden="true">${summary.statusSymbol}</span>
+          <span class="arrival-status-label">${esc(summary.statusText)}</span>
+        </div>
+        <div class="arrival-card__buffer-time">
+          <span>對 19:00 緩衝：</span>
+          <strong>${esc(summary.formattedBuffer)}</strong>
+        </div>
+      </div>
+
+      <dl class="arrival-card__stats">
+        <div class="stat">
+          <dt>預估抵達</dt>
+          <dd class="stat-highlight">${esc(summary.estimatedArrival)}</dd>
+        </div>
+        <div class="stat">
+          <dt>總時長</dt>
+          <dd>${esc(summary.formattedDuration)}</dd>
+        </div>
+        <div class="stat">
+          <dt>每人費用</dt>
+          <dd class="stat-highlight">${formatCurrency(summary.costPerPerson)}</dd>
+        </div>
+        <div class="stat">
+          <dt>全團（${summary.partySize} 人）</dt>
+          <dd>${formatCurrency(summary.costGroup)}</dd>
+        </div>
+      </dl>
+
+      <p class="arrival-card__summary">
+        <span class="arrival-card__summary-label">路線鏈：</span>
+        <span>${esc(summary.routeSummary)}</span>
+      </p>
+
+      <details class="arrival-card__legs"${isExpanded ? ' open' : ''}>
+        <summary class="arrival-card__legs-summary">
+          <span>腿段明細（共 ${summary.legs.length} 段）</span>
+        </summary>
+        <ol class="arrival-leg-chain">
+          ${summary.legs
+            .map((leg, idx) => {
+              const costText =
+                leg.costTotal != null
+                  ? `${formatCurrency(leg.costTotal)} 全團（${summary.partySize} 人均攤：每人約 ${formatCurrency(
+                      Math.round(leg.costTotal / summary.partySize)
+                    )}）`
+                  : leg.costYen
+                    ? `${formatCurrency(leg.costYen)}／人`
+                    : '免費／步行';
+              return `
+            <li class="arrival-leg-item arrival-leg-item--${esc(leg.mode)}">
+              <div class="arrival-leg-item__order" aria-hidden="true">${idx + 1}</div>
+              <div class="arrival-leg-item__main">
+                <div class="arrival-leg-item__row">
+                  <span class="arrival-leg-item__time">${esc(leg.time)}</span>
+                  <span class="arrival-leg-item__name">${esc(leg.name)}</span>
+                  <span class="arrival-leg-item__cost">${esc(costText)}</span>
+                </div>
+                <div class="arrival-leg-item__stations">
+                  <span>${esc(leg.from)}</span>
+                  <span class="arrival-leg-item__arrow" aria-hidden="true">→</span>
+                  <span>${esc(leg.to)}</span>
+                </div>
+                ${leg.note ? `<p class="arrival-leg-item__note">ℹ️ ${esc(leg.note)}</p>` : ''}
+                ${
+                  leg.sourceUrl
+                    ? `<a href="${esc(leg.sourceUrl)}" target="_blank" rel="noopener" class="source-link">${esc(
+                        leg.source || '官方資料'
+                      )} ↗</a>`
+                    : ''
+                }
+              </div>
+            </li>`;
+            })
+            .join('')}
+        </ol>
+      </details>
+
+      <div class="arrival-card__analysis">
+        <p class="plan-option__pro"><strong>優點</strong>：＋ ${esc(summary.pros)}</p>
+        <p class="plan-option__con"><strong>考量</strong>：− ${esc(summary.cons)}</p>
+      </div>
+
+      <footer class="arrival-card__foot">
+        <p class="arrival-card__caveat">
+          ℹ️ ${esc(summary.statusNote)}
+          ${summary.sourceUrl ? `· <a href="${esc(summary.sourceUrl)}" target="_blank" rel="noopener">官方時刻票價 ↗</a>` : ''}
+        </p>
+      </footer>
+    </article>
+  `;
+}
+
+function renderDayArrivalBlock() {
+  const block = $('day-arrival-block');
+  if (!block) return;
+  const day = currentDay();
+  const isDay5 = dayIndexOf(day) === 5;
+  block.hidden = !isDay5;
+  if (!isDay5) {
+    block.innerHTML = '';
+    return;
+  }
+
+  patchHTML(
+    block,
+    `
+    <div class="cockpit-arrival-card">
+      <div class="cockpit-arrival-card__header">
+        <div>
+          <span class="cockpit-arrival-card__tag">12/15 朋友抵達方案</span>
+          <h3 class="cockpit-arrival-card__title">成田 T3 (06:35 著陸) → Hotel &amp; Onsen 2307（19:00 前抵達）</h3>
+        </div>
+        <button type="button" class="btn btn--quiet btn--sm" id="btn-jump-plan-arrival">查看計畫比較 ↗</button>
+      </div>
+      <p class="cockpit-arrival-card__desc">
+        5 位友人本日落地！需於 <strong>19:00 前</strong> 抵達 Hotel &amp; Onsen 2307。以下為 4 條抵達路線鏈比較，計程車/包車費用已依目前全團（${state.partySize} 人）自動分攤：
+      </p>
+      <div class="cockpit-arrival-card__list">
+        ${FRIEND_ARRIVAL_OPTIONS.map((opt) => renderArrivalOptionCard(opt, state.partySize, opt.id === 'plan-a')).join('')}
+      </div>
+    </div>
+  `
+  );
+}
+
 function renderOperateCaveat() {
   patchHTML($('operate-caveat'), `
     <strong>資料狀態</strong>：${esc(TRIP_META.caveat)}
@@ -666,18 +820,12 @@ function renderOverview() {
 }
 
 function renderPlanOptions() {
-  patchHTML($('plan-options'), TRANSFER_PLANS.map(
-    (plan) => `
-    <li class="plan-option">
-      <p class="plan-option__head">
-        <span class="plan-option__label">${esc(plan.label)}</span>
-        ${statusPill(plan.status)}
-      </p>
-      <p class="plan-option__eta">${esc(plan.eta)} · ${esc(plan.costNote)}</p>
-      <p class="plan-option__pro">＋ ${esc(plan.pros)}</p>
-      <p class="plan-option__con">− ${esc(plan.cons)}</p>
-    </li>`
-  ).join(''));
+  const partyLabel = $('arrival-party-label');
+  if (partyLabel) partyLabel.textContent = String(state.partySize);
+  patchHTML(
+    $('plan-options'),
+    FRIEND_ARRIVAL_OPTIONS.map((opt) => renderArrivalOptionCard(opt, state.partySize, true)).join('')
+  );
 }
 
 function renderPlaybook() {
@@ -808,6 +956,8 @@ function renderFieldKit() {
     ? list.map((phrase) => renderPhrase(phrase)).join('')
     : '<li class="empty-state">沒有符合的短句。</li>');
 
+  renderDiningGuide();
+
   patchHTML($('emergency-list'), EMERGENCY_CONTACTS.map(
     (contact) => `
     <li class="emergency-item">
@@ -861,6 +1011,94 @@ function renderPhrase(phrase) {
                 aria-label="朗讀「${esc(phrase.zh)}」的日文">🔊</button>
       </div>
     </li>`;
+}
+
+function renderDiningGuide() {
+  const regionSelect = $('dining-region-select');
+  if (regionSelect) {
+    const regions = getDiningRegions(DINING_PLACES);
+    const optionsHTML =
+      '<option value="all">全部區域</option>' +
+      regions
+        .map(
+          (r) => `<option value="${esc(r)}"${r === activeDiningRegion ? ' selected' : ''}>${esc(r)}</option>`
+        )
+        .join('');
+    if (regionSelect.innerHTML !== optionsHTML) {
+      regionSelect.innerHTML = optionsHTML;
+    }
+    regionSelect.value = activeDiningRegion;
+  }
+
+  const catButtons = $('dining-cat-filters');
+  if (catButtons) {
+    catButtons.querySelectorAll('[data-dining-cat]').forEach((btn) => {
+      const active = btn.dataset.diningCat === activeDiningCategory;
+      btn.classList.toggle('chip--active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  const searchInput = $('dining-search-input');
+  if (searchInput && document.activeElement !== searchInput) {
+    searchInput.value = diningSearchQuery;
+  }
+  const searchClear = $('dining-search-clear');
+  if (searchClear) searchClear.hidden = !diningSearchQuery;
+
+  const filtered = filterDiningPlaces(DINING_PLACES, {
+    category: activeDiningCategory,
+    region: activeDiningRegion,
+    query: diningSearchQuery,
+  });
+
+  const countEl = $('dining-count');
+  if (countEl) {
+    const catLabel =
+      activeDiningCategory === 'eat' ? '吃' : activeDiningCategory === 'drink' ? '喝／酒吧' : '全部吃喝';
+    const regLabel = activeDiningRegion === 'all' ? '全部區域' : activeDiningRegion;
+    countEl.textContent = `共 ${filtered.length} 間（${catLabel} · ${regLabel}）`;
+  }
+
+  const listEl = $('dining-list');
+  if (!listEl) return;
+
+  patchHTML(
+    listEl,
+    filtered.length
+      ? filtered
+          .map(
+            (p) => `
+      <li class="dining-item" id="${esc(p.id)}">
+        <div class="dining-item__top">
+          <div class="dining-item__title-group">
+            <h4 class="dining-item__name">${highlightText(esc(p.name), esc(diningSearchQuery))}</h4>
+            <span class="dining-item__ja" lang="ja">${highlightText(esc(p.nameJa), esc(diningSearchQuery))}</span>
+          </div>
+          <div class="dining-item__tags">
+            <span class="pill pill--${p.category === 'drink' ? 'bar' : 'food'}">${p.category === 'drink' ? '🍺 喝／酒吧' : '🍜 吃'}</span>
+            <span class="tag tag--region">${esc(p.region)}</span>
+            <span class="tag tag--genre">${esc(p.genre)}</span>
+          </div>
+        </div>
+        <p class="dining-item__notes">${highlightText(esc(p.notes), esc(diningSearchQuery))}</p>
+        <div class="dining-item__bottom">
+          <div class="dining-item__source-info">
+            <span class="source-tag">${esc(p.source)}</span>
+            ${p.sourceUrl ? `<a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener" class="source-link">官網／參考 ↗</a>` : ''}
+            <span class="dining-item__status-note">※ ${esc(p.statusNote)}</span>
+          </div>
+          <div class="dining-item__actions">
+            <button type="button" class="icon-btn" data-copy="${esc(p.nameJa)}" aria-label="複製「${esc(p.name)}」的日文名稱" title="複製日文店名">📋</button>
+            <button type="button" class="icon-btn" data-zoom-ja="${esc(p.nameJa)}" data-zoom-zh="${esc(p.name)}" data-zoom-address="${esc(p.region)} · ${esc(p.genre)}" aria-label="放大顯示「${esc(p.name)}」日文名" title="放大給店家看">⤢</button>
+          </div>
+        </div>
+      </li>
+    `
+          )
+          .join('')
+      : '<li class="empty-state">沒有符合條件的吃喝地點。請調整分類、區域或搜尋詞。</li>'
+  );
 }
 
 function renderStorageNote() {
@@ -1015,6 +1253,9 @@ function doReset() {
   state.currentDay = resolveActiveDay(SAMPLE_ITINERARY, new Date()).dayNumber;
   searchQuery = '';
   fieldQuery = '';
+  activeDiningCategory = 'all';
+  activeDiningRegion = 'all';
+  diningSearchQuery = '';
   update();
   toast('已回到範例資料');
 }
@@ -1254,6 +1495,71 @@ function wireEvents() {
     if (!btn) return;
     const dest = DESTINATION_CARDS.find((d) => d.id === btn.dataset.dest);
     if (dest) openCard({ ja: dest.nameJa, zh: dest.nameZh, address: dest.address, phone: dest.phone });
+  });
+
+  // 吃喝篩選與互動
+  const diningCatBar = $('dining-cat-filters');
+  if (diningCatBar) {
+    diningCatBar.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-dining-cat]');
+      if (!btn) return;
+      activeDiningCategory = btn.dataset.diningCat;
+      renderDiningGuide();
+    });
+  }
+
+  const diningRegionSelect = $('dining-region-select');
+  if (diningRegionSelect) {
+    diningRegionSelect.addEventListener('change', (e) => {
+      activeDiningRegion = e.target.value;
+      renderDiningGuide();
+    });
+  }
+
+  const diningSearchInput = $('dining-search-input');
+  if (diningSearchInput) {
+    diningSearchInput.addEventListener('input', (e) => {
+      diningSearchQuery = e.target.value;
+      renderDiningGuide();
+    });
+  }
+
+  const diningSearchClear = $('dining-search-clear');
+  if (diningSearchClear) {
+    diningSearchClear.addEventListener('click', () => {
+      diningSearchQuery = '';
+      renderDiningGuide();
+      $('dining-search-input').focus();
+    });
+  }
+
+  const diningList = $('dining-list');
+  if (diningList) {
+    diningList.addEventListener('click', (e) => {
+      const copyBtn = e.target.closest('[data-copy]');
+      if (copyBtn) {
+        navigator.clipboard.writeText(copyBtn.dataset.copy).then(() => toast('已複製日文店名')).catch(() => toast('複製失敗'));
+        return;
+      }
+      const zoomBtn = e.target.closest('[data-zoom-ja]');
+      if (zoomBtn) {
+        openCard({
+          ja: zoomBtn.dataset.zoomJa,
+          zh: zoomBtn.dataset.zoomZh,
+          address: zoomBtn.dataset.zoomAddress,
+        });
+      }
+    });
+  }
+
+  // 12/15 當日抵達卡片點擊「查看計畫比較」跳轉至計畫分頁
+  document.addEventListener('click', (e) => {
+    const jumpPlan = e.target.closest('#btn-jump-plan-arrival');
+    if (jumpPlan) {
+      setTab('plan');
+      const targetEl = $('plans-heading');
+      if (targetEl) targetEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
   });
 
   // 大字卡

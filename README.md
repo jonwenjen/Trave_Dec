@@ -10,6 +10,8 @@
 - **預算**：分類金額可編輯，總計依人數縮放。
 - **住宿追蹤**：未確認住宿明確標記，並有「待確認住宿」清單。
 - **隨身工具**：日文目的地大字卡、情境短句（支援瀏覽器語音朗讀）、110／119 與雪場緊急電話一鍵撥打、官方資訊連結。
+- **朋友抵達方案**：12/15 友人 NRT T3 06:35 → Hotel & Onsen 2307 的多方案規劃器（4 條路線：Skyliner+新幹線+急行巴士／長野電鉄+路線巴士／計程車／直行巴士），每方案列腿段鏈、總時長、費用，並顯示**預估抵達時刻與對 19:00 的緩衝**（達標 ✓／未達標 ⚠），計程車包車可依人數分攤。
+- **吃喝清單**：「吃」（餐廳・定食・拉麵・甜點）與「喝／酒吧」（居酒屋・精釀・酒廊）分類，依區域與類別篩選，含來源與營業日提醒。
 - **離線**：service worker + web manifest，首次載入後核心內容可離線開啟。
 - **匯出／分享**：行程 JSON 匯出／匯入、`.ics` 行事曆（含備忘與轉乘／航班提醒）、分享連結（狀態編進 URL hash）、一鍵重置回範例。
 
@@ -23,7 +25,7 @@
 ```bash
 npm install
 npm run dev      # 本機開發（Vite）
-npm test         # Node 內建測試（118 個測試）
+npm test         # Node 內建測試（152 個測試）
 npm run build    # 產出 dist/
 npm run preview  # 預覽建置結果
 ```
@@ -42,7 +44,7 @@ Vite `base` 已設為 `/Trave_Dec/`，對應 GitHub Pages 專案頁路徑。
 ## 歸屬（attribution）
 
 - **專案領導**：Hermes Agent（排程、協調、調研整合、驗證與發布）
-- **主要實作**：Claude Code CLI — 初始版 `claude-opus-5`；UX 改進（離線快取、深色模式、滑動手勢等）由 agy CLI — `claude-opus-4-6-thinking`
+- **主要實作**：Claude Code CLI — 初始版 `claude-opus-5`；UX 改進（離線快取、深色模式、滑動手勢等）由 agy CLI — `claude-opus-4-6-thinking`；朋友抵達方案與吃喝清單由 agy CLI — `gemini-3.8-flash-high`
 - **調研／審查**：Gemini CLI — `gemini-3.8-flash-high`（thinking）
 
 ## 路線圖（Roadmap）

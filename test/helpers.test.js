@@ -45,8 +45,19 @@ import {
   buildShareURL,
   clampDayNumber,
   eventEditsFromDays,
+  calculateArrivalBuffer,
+  computeArrivalOptionCost,
+  computeArrivalOptionSummary,
+  filterDiningPlaces,
+  getDiningRegions,
 } from '../src/helpers.js';
-import { SAMPLE_ITINERARY, TRIP_META, SAMPLE_BUDGET } from '../src/data/itinerary.js';
+import {
+  SAMPLE_ITINERARY,
+  TRIP_META,
+  SAMPLE_BUDGET,
+  FRIEND_ARRIVAL_OPTIONS,
+  DINING_PLACES,
+} from '../src/data/itinerary.js';
 
 describe('金額', () => {
   describe('formatCurrency', () => {
@@ -643,3 +654,202 @@ describe('範例資料完整性', () => {
     }
   });
 });
+
+describe('朋友抵達方案 (12/15 NRT T3 → 2307)', () => {
+  describe('calculateArrivalBuffer', () => {
+    it('calculates positive buffer when arriving before 19:00 with checkmark', () => {
+      const res = calculateArrivalBuffer('15:45', '19:00');
+      assert.strictEqual(res.bufferMinutes, 195);
+      assert.strictEqual(res.isMet, true);
+      assert.strictEqual(res.statusSymbol, '✓');
+      assert.ok(res.formattedBuffer.includes('195'));
+    });
+
+    it('considers arriving exactly at 19:00 as met', () => {
+      const res = calculateArrivalBuffer('19:00', '19:00');
+      assert.strictEqual(res.bufferMinutes, 0);
+      assert.strictEqual(res.isMet, true);
+      assert.strictEqual(res.statusSymbol, '✓');
+    });
+
+    it('flags late arrival with warning symbol when arriving after 19:00', () => {
+      const res = calculateArrivalBuffer('19:20', '19:00');
+      assert.strictEqual(res.bufferMinutes, -20);
+      assert.strictEqual(res.isMet, false);
+      assert.strictEqual(res.statusSymbol, '⚠');
+      assert.ok(res.formattedBuffer.includes('超時'));
+    });
+
+    it('defaults target to 19:00 if omitted', () => {
+      const res = calculateArrivalBuffer('16:30');
+      assert.strictEqual(res.bufferMinutes, 150);
+      assert.strictEqual(res.isMet, true);
+      assert.strictEqual(res.statusSymbol, '✓');
+    });
+
+    it('handles invalid or missing time gracefully', () => {
+      const res = calculateArrivalBuffer('invalid');
+      assert.strictEqual(res.bufferMinutes, null);
+      assert.strictEqual(res.isMet, false);
+      assert.strictEqual(res.statusSymbol, '⚠');
+    });
+  });
+
+  describe('computeArrivalOptionCost', () => {
+    const sampleOption = {
+      legs: [
+        { name: 'Skyliner', costYen: 2580, perPerson: true },
+        { name: '新幹線', costYen: 8340, perPerson: true },
+        { name: '計程車', costTotal: 15000 },
+      ],
+    };
+
+    it('splits vehicle costTotal across party size', () => {
+      const cost5 = computeArrivalOptionCost(sampleOption, 5);
+      // 2580 + 8340 + (15000 / 5 = 3000) = 13920
+      assert.strictEqual(cost5.perPerson, 13920);
+      assert.strictEqual(cost5.group, 69600);
+      assert.strictEqual(cost5.partySize, 5);
+    });
+
+    it('recalculates per person cost when party size changes', () => {
+      const cost3 = computeArrivalOptionCost(sampleOption, 3);
+      // 2580 + 8340 + (15000 / 3 = 5000) = 15920
+      assert.strictEqual(cost3.perPerson, 15920);
+      assert.strictEqual(cost3.group, 47760);
+    });
+
+    it('survives partySize <= 0 or junk by falling back to 1', () => {
+      const cost = computeArrivalOptionCost(sampleOption, 0);
+      assert.strictEqual(cost.partySize, 1);
+      assert.strictEqual(cost.perPerson, 2580 + 8340 + 15000);
+    });
+  });
+
+  describe('computeArrivalOptionSummary', () => {
+    it('enriches option with costs, duration, and buffer info', () => {
+      const opt = FRIEND_ARRIVAL_OPTIONS[0]; // Plan A
+      const summary = computeArrivalOptionSummary(opt, 5, '19:00');
+      assert.ok(summary.costPerPerson > 0);
+      assert.ok(summary.costGroup > 0);
+      assert.strictEqual(summary.isMet, true);
+      assert.strictEqual(summary.statusSymbol, '✓');
+      assert.ok(summary.bufferMinutes > 0);
+      assert.ok(summary.formattedDuration.includes('小時'));
+    });
+  });
+
+  describe('FRIEND_ARRIVAL_OPTIONS 資料完整性', () => {
+    it('contains exactly 4 options: A, B, C, D', () => {
+      assert.strictEqual(FRIEND_ARRIVAL_OPTIONS.length, 4);
+      const ids = FRIEND_ARRIVAL_OPTIONS.map((o) => o.id);
+      assert.deepStrictEqual(ids, ['plan-a', 'plan-b', 'plan-c', 'plan-d']);
+    });
+
+    it('each option has legs chain, estimatedArrival, and official sources', () => {
+      for (const opt of FRIEND_ARRIVAL_OPTIONS) {
+        assert.ok(opt.name, `缺少名稱: ${opt.id}`);
+        assert.ok(opt.estimatedArrival, `缺少抵達時間: ${opt.id}`);
+        assert.ok(Array.isArray(opt.legs) && opt.legs.length > 0, `缺少腿段: ${opt.id}`);
+        assert.ok(opt.sourceUrl && opt.sourceUrl.startsWith('https://'), `缺少合法 sourceUrl: ${opt.id}`);
+        assert.ok(opt.statusNote && opt.statusNote.includes('規劃估算'), `缺少估算說明: ${opt.id}`);
+      }
+    });
+
+    it('Plan D is marked as 需確認', () => {
+      const planD = FRIEND_ARRIVAL_OPTIONS.find((o) => o.id === 'plan-d');
+      assert.ok(planD.badge.includes('需確認') || planD.name.includes('需確認'));
+      assert.strictEqual(planD.status, 'unconfirmed');
+    });
+
+    it('supports taxi cost sharing in Plan C', () => {
+      const planC = FRIEND_ARRIVAL_OPTIONS.find((o) => o.id === 'plan-c');
+      const taxiLeg = planC.legs.find((leg) => leg.mode === 'taxi' || leg.costTotal != null);
+      assert.ok(taxiLeg, 'Plan C 應有計程車腿段');
+      assert.ok(taxiLeg.costTotal > 0, '計程車腿段應有 costTotal 全團費用');
+    });
+  });
+});
+
+describe('更多吃喝 (Dining & Drinks)', () => {
+  describe('filterDiningPlaces', () => {
+    it('returns all places when no filters are set', () => {
+      const res = filterDiningPlaces(DINING_PLACES);
+      assert.strictEqual(res.length, DINING_PLACES.length);
+    });
+
+    it('filters by category: eat vs drink', () => {
+      const eats = filterDiningPlaces(DINING_PLACES, { category: 'eat' });
+      const drinks = filterDiningPlaces(DINING_PLACES, { category: 'drink' });
+      assert.ok(eats.length > 0);
+      assert.ok(drinks.length > 0);
+      assert.ok(eats.every((p) => p.category === 'eat'));
+      assert.ok(drinks.every((p) => p.category === 'drink'));
+    });
+
+    it('filters by region', () => {
+      const takasaki = filterDiningPlaces(DINING_PLACES, { region: '高崎' });
+      assert.ok(takasaki.length >= 3);
+      assert.ok(takasaki.every((p) => p.region === '高崎'));
+    });
+
+    it('filters by keyword search', () => {
+      const res = filterDiningPlaces(DINING_PLACES, { query: '羅宋湯' });
+      assert.ok(res.length >= 1);
+      assert.ok(res[0].name.includes('橫手山頂ヒュッテ') || res[0].nameJa.includes('横手山頂ヒュッテ'));
+    });
+
+    it('combines category, region and search query', () => {
+      const res = filterDiningPlaces(DINING_PLACES, {
+        region: '長野',
+        category: 'drink',
+        query: '地酒',
+      });
+      assert.ok(res.length >= 1);
+      assert.strictEqual(res[0].region, '長野');
+      assert.strictEqual(res[0].category, 'drink');
+    });
+  });
+
+  describe('getDiningRegions', () => {
+    it('extracts unique regions from dining list', () => {
+      const regions = getDiningRegions(DINING_PLACES);
+      assert.ok(regions.includes('高崎'));
+      assert.ok(regions.includes('佐久平'));
+      assert.ok(regions.includes('長野'));
+      assert.ok(regions.includes('橫濱'));
+      assert.ok(regions.some((r) => r.includes('志賀高原')));
+    });
+  });
+
+  describe('DINING_PLACES 資料完整性', () => {
+    it('contains over 30 verified places from docs and cities', () => {
+      assert.ok(DINING_PLACES.length >= 30, `實際只有 ${DINING_PLACES.length} 間`);
+    });
+
+    it('every dining place has required fields and valid category', () => {
+      const ids = new Set();
+      for (const p of DINING_PLACES) {
+        assert.ok(p.id, `缺少 id: ${p.name}`);
+        assert.ok(!ids.has(p.id), `重複 id: ${p.id}`);
+        ids.add(p.id);
+        assert.ok(p.name, `缺少中文名: ${p.id}`);
+        assert.ok(p.nameJa, `缺少日文名: ${p.id}`);
+        assert.ok(['eat', 'drink'].includes(p.category), `category 須為 eat 或 drink: ${p.id}`);
+        assert.ok(p.region, `缺少地區: ${p.id}`);
+        assert.ok(p.genre, `缺少型態: ${p.id}`);
+        assert.ok(p.notes, `缺少備註: ${p.id}`);
+        if (p.sourceUrl) {
+          assert.ok(p.sourceUrl.startsWith('https://'), `sourceUrl 需為 https: ${p.sourceUrl}`);
+        }
+      }
+    });
+
+    it('includes Yokoteyama Hutte and Daruma Shokudo and Teppa Room', () => {
+      assert.ok(DINING_PLACES.some((p) => p.name.includes('橫手山頂ヒュッテ')));
+      assert.ok(DINING_PLACES.some((p) => p.name.includes('だるま食堂')));
+      assert.ok(DINING_PLACES.some((p) => p.name.includes('TEPPA ROOM')));
+    });
+  });
+});
+
