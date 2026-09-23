@@ -1,0 +1,20 @@
+{
+  "name": "Trave_Dec — 2307 志賀高原滑雪旅行",
+  "short_name": "Trave_Dec",
+  "description": "10 日滑雪行程駕駛艙：行程、轉乘風險、預算與離線隨身工具。所有時刻與票價為規劃估算。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf8f4",
+  "theme_color": "#1b1a18",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

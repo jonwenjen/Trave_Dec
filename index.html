@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="2307 志賀高原滑雪旅行 — 10 日行程駕駛艙，離線可用的行前與現場工具" />
+  <meta name="theme-color" content="#1b1a18" />
+  <meta name="color-scheme" content="light" />
+  <title>Trave_Dec — 2307 志賀高原滑雪旅行</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛷️</text></svg>" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到主要內容</a>
+
+  <div id="app">
+    <!-- ═══ Top bar ═══ -->
+    <header class="top-bar" role="banner">
+      <div class="top-bar__brand">
+        <span class="top-bar__mark" aria-hidden="true">⛷</span>
+        <span class="top-bar__names">
+          <span class="top-bar__title">2307 志賀高原</span>
+          <span class="top-bar__subtitle" id="trip-daterange">2026/12/11 – 12/20</span>
+        </span>
+      </div>
+      <div class="top-bar__right">
+        <span id="offline-badge" class="offline-badge" role="status" aria-live="polite" hidden>離線模式</span>
+        <div class="party-control">
+          <span class="party-control__label" id="party-label" aria-hidden="true">👥</span>
+          <button type="button" class="party-control__btn" id="party-minus" aria-label="減少一位團員">−</button>
+          <input type="number" id="party-size" class="party-control__input"
+                 min="1" max="20" step="1" value="6" inputmode="numeric"
+                 aria-labelledby="party-label" aria-describedby="party-hint" />
+          <button type="button" class="party-control__btn" id="party-plus" aria-label="增加一位團員">＋</button>
+        </div>
+        <span id="party-hint" class="visually-hidden">團員人數，用於分攤計程車與包車費用</span>
+      </div>
+    </header>
+
+    <!-- ═══ Main ═══ -->
+    <main class="main-content" id="main-content">
+
+      <!-- ────────── 行程 OPERATE ────────── -->
+      <section class="tab-panel" id="panel-operate" role="tabpanel" aria-labelledby="tab-operate">
+
+        <div class="cockpit">
+          <p class="cockpit__phase" id="trip-phase"></p>
+          <div class="day-hero" id="day-hero"></div>
+          <div class="now-card" id="now-card"></div>
+        </div>
+
+        <nav class="day-rail" aria-label="日期導覽">
+          <button type="button" class="day-rail__arrow" id="day-prev" aria-label="前一天">‹</button>
+          <div class="day-rail__track" id="day-nav" role="group" aria-label="第幾天"></div>
+          <button type="button" class="day-rail__arrow" id="day-next" aria-label="後一天">›</button>
+        </nav>
+
+        <div class="filter-bar">
+          <div class="search-bar">
+            <span class="search-bar__icon" aria-hidden="true">🔍</span>
+            <input type="search" id="search-input" class="search-bar__input"
+                   placeholder="搜尋全程（地點、日文名、備註⋯）" aria-label="搜尋行程"
+                   aria-describedby="search-hint" autocomplete="off" />
+            <button type="button" class="search-bar__clear" id="search-clear" aria-label="清除搜尋" hidden>✕</button>
+          </div>
+          <p id="search-hint" class="visually-hidden">搜尋會比對全部 10 天的行程標題、日文名稱與備註</p>
+          <div class="chip-row" id="type-filters" role="group" aria-label="依類型篩選"></div>
+        </div>
+
+        <div id="search-results" class="search-results" hidden></div>
+
+        <div id="day-view">
+          <ol class="timeline" id="timeline" aria-label="當日行程"></ol>
+          <p class="empty-state" id="timeline-empty" hidden>這一天沒有符合篩選條件的行程。</p>
+        </div>
+
+        <div class="caveat" id="operate-caveat"></div>
+      </section>
+
+      <!-- ────────── 計畫 PLAN ────────── -->
+      <section class="tab-panel" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+        <h2 class="panel-title">計畫</h2>
+        <p class="panel-lede">人數、轉乘緩衝標準、住宿確認狀態。改動會即時反映到行程與預算，並存在這台裝置上。</p>
+
+        <section class="block" aria-labelledby="buffer-heading">
+          <h3 class="block__title" id="buffer-heading">轉乘緩衝標準</h3>
+          <p class="block__lede">設定你認為「安全」的換乘時間。低於下限視為高風險，介於兩者之間視為需留意。</p>
+          <div class="buffer-controls">
+            <label class="field">
+              <span class="field__label">高風險門檻（分鐘）</span>
+              <input type="number" id="buffer-tight" class="field__input" min="0" max="180" step="5" inputmode="numeric" />
+            </label>
+            <label class="field">
+              <span class="field__label">安全門檻（分鐘）</span>
+              <input type="number" id="buffer-safe" class="field__input" min="0" max="240" step="5" inputmode="numeric" />
+            </label>
+            <button type="button" class="btn btn--quiet" id="buffer-reset">回到預設 15 / 30</button>
+          </div>
+          <p class="block__note" id="buffer-summary" role="status"></p>
+        </section>
+
+        <section class="block" aria-labelledby="risk-heading">
+          <h3 class="block__title" id="risk-heading">需要留意的轉乘</h3>
+          <p class="block__lede">可直接改寫每段的緩衝分鐘，重新評估風險。</p>
+          <ul class="risk-list" id="risk-list"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="lodging-heading">
+          <h3 class="block__title" id="lodging-heading">住宿確認</h3>
+          <p class="block__lede">未確認的住宿會在行程上持續標記，直到你在這裡勾選已訂房。</p>
+          <ul class="lodging-list" id="lodging-list"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="overview-heading">
+          <h3 class="block__title" id="overview-heading">全程一覽</h3>
+          <ol class="overview-list" id="overview-list"></ol>
+        </section>
+
+        <section class="block" aria-labelledby="plans-heading">
+          <h3 class="block__title" id="plans-heading">12/15 友人上山作戰板</h3>
+          <p class="block__lede">三個方案的取捨。抵達時間為規劃估算，26-27 冬季時刻公布後需重新核對。</p>
+          <ul class="plan-options" id="plan-options"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="playbook-heading">
+          <h3 class="block__title" id="playbook-heading">突發狀況應對</h3>
+          <ul class="playbook" id="playbook"></ul>
+        </section>
+      </section>
+
+      <!-- ────────── 預算 BUDGET ────────── -->
+      <section class="tab-panel" id="panel-budget" role="tabpanel" aria-labelledby="tab-budget" hidden>
+        <h2 class="panel-title">預算</h2>
+        <p class="panel-lede">每人概估金額，可直接編輯。實際費用因匯率、購票時機與住宿方案而異。</p>
+
+        <div class="totals">
+          <div class="totals__item">
+            <span class="t-eyebrow">每人總計</span>
+            <p class="totals__value" id="budget-total">¥0</p>
+          </div>
+          <div class="totals__item totals__item--muted">
+            <span class="t-eyebrow">全團（<span id="budget-party-label">6</span> 人）</span>
+            <p class="totals__value" id="budget-group-total">¥0</p>
+          </div>
+        </div>
+
+        <div class="budget-grid" id="budget-grid"></div>
+
+        <div class="action-group">
+          <button type="button" class="btn btn--quiet" id="budget-reset">還原預算為範例金額</button>
+        </div>
+
+        <section class="block" aria-labelledby="itinerary-cost-heading">
+          <h3 class="block__title" id="itinerary-cost-heading">行程中已標註的費用</h3>
+          <p class="block__lede">來自行程項目上的票價與車資，依目前人數分攤。這是獨立於上方預算的對照值，不會互相覆蓋。</p>
+          <ul class="cost-breakdown" id="cost-breakdown"></ul>
+          <p class="cost-breakdown__total" id="itinerary-cost-total"></p>
+        </section>
+
+        <div class="caveat">
+          <strong>⚠️ 規劃估算</strong>：金額來自 2026/09 擷取的公開票價與經驗值，未連接任何即時訂價或匯率服務。
+        </div>
+      </section>
+
+      <!-- ────────── 隨身 FIELD KIT ────────── -->
+      <section class="tab-panel" id="panel-fieldkit" role="tabpanel" aria-labelledby="tab-fieldkit" hidden>
+        <h2 class="panel-title">隨身工具</h2>
+        <p class="panel-lede">現場用的東西：給對方看的日文大字卡、念得出來的短句、打得出去的電話。全部離線可用。</p>
+
+        <div class="search-bar search-bar--inline">
+          <span class="search-bar__icon" aria-hidden="true">🔍</span>
+          <input type="search" id="field-search" class="search-bar__input"
+                 placeholder="搜尋地點或短句" aria-label="搜尋隨身工具" autocomplete="off" />
+          <button type="button" class="search-bar__clear" id="field-search-clear" aria-label="清除搜尋" hidden>✕</button>
+        </div>
+
+        <section class="block" aria-labelledby="dest-heading">
+          <h3 class="block__title" id="dest-heading">日文大字卡</h3>
+          <p class="block__lede">點卡片放大成全螢幕，直接給司機或站務人員看。</p>
+          <div class="dest-cards" id="dest-cards"></div>
+        </section>
+
+        <section class="block" aria-labelledby="phrase-heading">
+          <h3 class="block__title" id="phrase-heading">情境短句</h3>
+          <p class="block__lede" id="speech-note"></p>
+          <div class="chip-row" id="phrase-cats" role="tablist" aria-label="短句分類"></div>
+          <ul class="phrase-list" id="phrase-list"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="emergency-heading">
+          <h3 class="block__title" id="emergency-heading">緊急聯絡</h3>
+          <p class="block__lede">110 警察／119 消防・救護車。在日本國內直撥，不需加國碼。</p>
+          <ul class="emergency-list" id="emergency-list"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="links-heading">
+          <h3 class="block__title" id="links-heading">官方資源</h3>
+          <p class="block__lede">需要連網。出發前與現場都以這些官方頁面為準。</p>
+          <ul class="official-links" id="official-links"></ul>
+        </section>
+
+        <section class="block" aria-labelledby="data-heading">
+          <h3 class="block__title" id="data-heading">資料與備份</h3>
+          <div class="action-group">
+            <button type="button" class="btn btn--primary" id="btn-export-ics">📅 下載 .ics 行事曆</button>
+            <button type="button" class="btn" id="btn-export-json">📋 匯出 JSON</button>
+            <button type="button" class="btn" id="btn-import-json">📥 匯入 JSON</button>
+            <button type="button" class="btn" id="btn-share">🔗 分享設定連結</button>
+          </div>
+          <p class="block__note" id="storage-note"></p>
+          <div class="action-group">
+            <button type="button" class="btn btn--danger" id="btn-reset">🔄 清除本機修改，回到範例</button>
+          </div>
+          <input type="file" id="import-file" accept="application/json,.json" class="visually-hidden" tabindex="-1" />
+        </section>
+
+        <section class="block" aria-labelledby="live-heading">
+          <h3 class="block__title" id="live-heading">即時資料狀態</h3>
+          <ul class="live-status" id="live-status"></ul>
+          <p class="block__note">本應用刻意不顯示任何即時天氣、雪況、纜車或列車資訊。畫面上看到的都是規劃期擷取的靜態資料。</p>
+        </section>
+
+        <div class="caveat" id="source-caveat"></div>
+      </section>
+
+    </main>
+
+    <!-- ═══ Tab bar ═══ -->
+    <nav class="tab-bar" role="tablist" aria-label="主導覽">
+      <button class="tab-bar__btn" role="tab" id="tab-operate" aria-controls="panel-operate" aria-selected="true" data-tab="operate">
+        <span class="tab-bar__icon" aria-hidden="true">🧭</span><span class="tab-bar__text">行程</span>
+      </button>
+      <button class="tab-bar__btn" role="tab" id="tab-plan" aria-controls="panel-plan" aria-selected="false" data-tab="plan" tabindex="-1">
+        <span class="tab-bar__icon" aria-hidden="true">🗺️</span><span class="tab-bar__text">計畫</span>
+      </button>
+      <button class="tab-bar__btn" role="tab" id="tab-budget" aria-controls="panel-budget" aria-selected="false" data-tab="budget" tabindex="-1">
+        <span class="tab-bar__icon" aria-hidden="true">💴</span><span class="tab-bar__text">預算</span>
+      </button>
+      <button class="tab-bar__btn" role="tab" id="tab-fieldkit" aria-controls="panel-fieldkit" aria-selected="false" data-tab="fieldkit" tabindex="-1">
+        <span class="tab-bar__icon" aria-hidden="true">🎒</span><span class="tab-bar__text">隨身</span>
+      </button>
+    </nav>
+
+    <!-- ═══ Fullscreen destination card ═══ -->
+    <div class="fullscreen-card" id="fullscreen-card" role="dialog" aria-modal="true"
+         aria-labelledby="fc-ja" hidden>
+      <button type="button" class="fullscreen-card__close" id="fullscreen-close" aria-label="關閉大字卡">✕</button>
+      <p class="fullscreen-card__ja" id="fc-ja"></p>
+      <p class="fullscreen-card__zh" id="fc-zh"></p>
+      <p class="fullscreen-card__address" id="fc-address"></p>
+      <a class="fullscreen-card__phone" id="fc-phone" href="#" hidden></a>
+      <p class="fullscreen-card__hint">把螢幕轉給對方看</p>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <footer class="app-footer">
+      <p>Trave_Dec — 行程事實改編自 <a href="https://jonwenjen.github.io/japan-ski-2026/" target="_blank" rel="noopener">2307 Carve Log</a></p>
+      <p>所有時刻與票價為規劃估算，出發前請向營運單位查證。</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

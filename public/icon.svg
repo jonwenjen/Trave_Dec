@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" role="img" aria-label="Trave_Dec">
+  <rect width="192" height="192" rx="34" fill="#1b1a18"/>
+  <path d="M20 138 L70 62 L104 112 L124 84 L172 138 Z" fill="#faf8f4"/>
+  <path d="M70 62 L104 112 L86 112 Z" fill="#d6cfc1"/>
+  <circle cx="140" cy="48" r="14" fill="#b8402c"/>
+  <rect x="20" y="146" width="152" height="6" rx="3" fill="#2f5a4c"/>
+</svg>

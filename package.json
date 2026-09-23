@@ -1,0 +1,21 @@
+{
+  "name": "trave_dec",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "2307 志賀高原滑雪旅行 — mobile-first trip companion in Traditional Chinese",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonwenjen/Trave_Dec.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
