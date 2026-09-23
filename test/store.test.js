@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import {
   STORAGE_KEY,
+  TAB_IDS,
   getDefaultState,
   normalizeState,
   loadState,
@@ -105,6 +106,24 @@ describe('normalizeState', () => {
 
   it('tolerates undefined input', () => {
     assert.deepStrictEqual(normalizeState(undefined), getDefaultState());
+  });
+
+  it('accepts every real tab id', () => {
+    for (const tab of TAB_IDS) {
+      assert.strictEqual(normalizeState({ activeTab: tab }).activeTab, tab);
+    }
+  });
+
+  it('falls back to 行程 for a tab that does not exist', () => {
+    // 一個被手改過的分享連結不該讓整個畫面變空白
+    assert.strictEqual(normalizeState({ activeTab: 'bogus' }).activeTab, 'operate');
+    assert.strictEqual(normalizeState({ activeTab: '' }).activeTab, 'operate');
+    assert.strictEqual(normalizeState({ activeTab: 42 }).activeTab, 'operate');
+  });
+
+  it('clamps a day number that is past the end of the trip', () => {
+    assert.strictEqual(normalizeState({ currentDay: 9999 }).currentDay, TRIP_DAY_COUNT);
+    assert.strictEqual(normalizeState({ currentDay: 0 }).currentDay, 1);
   });
 });
 

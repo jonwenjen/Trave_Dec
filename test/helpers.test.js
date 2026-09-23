@@ -43,6 +43,8 @@ import {
   encodeShareState,
   decodeShareState,
   buildShareURL,
+  clampDayNumber,
+  eventEditsFromDays,
 } from '../src/helpers.js';
 import { SAMPLE_ITINERARY, TRIP_META, SAMPLE_BUDGET } from '../src/data/itinerary.js';
 
@@ -538,6 +540,53 @@ describe('匯出 / 匯入 / 分享', () => {
     assert.ok(url.startsWith('https://example.com/Trave_Dec/?a=1#s='));
     assert.deepStrictEqual(decodeShareState(url.split('#s=')[1]), { day: 3 });
   });
+
+  describe('eventEditsFromDays', () => {
+    it('picks up the notes a traveller typed on the road', () => {
+      const edits = eventEditsFromDays([
+        { events: [{ id: 'd1-e2', userNote: '月台在 3 番線' }, { id: 'd1-e3' }] },
+      ]);
+      assert.deepStrictEqual(edits, { 'd1-e2': { userNote: '月台在 3 番線' } });
+    });
+
+    it('ignores blank notes and events with no id', () => {
+      const edits = eventEditsFromDays([
+        { events: [{ id: 'a', userNote: '   ' }, { userNote: '沒有 id' }, { id: 'b' }] },
+      ]);
+      assert.deepStrictEqual(edits, {});
+    });
+
+    it('tolerates junk input', () => {
+      assert.deepStrictEqual(eventEditsFromDays(null), {});
+      assert.deepStrictEqual(eventEditsFromDays([{}, { events: null }]), {});
+    });
+
+    it('round-trips notes through export → import', () => {
+      const withNote = applyEdits(SAMPLE_ITINERARY, {
+        eventEdits: { 'd4-e4': { userNote: '末班巴士，16:00 就到乘車處' } },
+      });
+      const parsed = importTripJSON(exportTripJSON(TRIP_META, withNote, SAMPLE_BUDGET, 6));
+      assert.deepStrictEqual(eventEditsFromDays(parsed.days), {
+        'd4-e4': { userNote: '末班巴士，16:00 就到乘車處' },
+      });
+    });
+  });
+});
+
+describe('clampDayNumber', () => {
+  it('keeps a day that exists', () => assert.strictEqual(clampDayNumber(7, 10), 7));
+  it('pulls a too-large day back to the last day', () =>
+    assert.strictEqual(clampDayNumber(9999, 10), 10));
+  it('pushes a too-small day up to day 1', () => {
+    assert.strictEqual(clampDayNumber(0, 10), 1);
+    assert.strictEqual(clampDayNumber(-4, 10), 1);
+  });
+  it('falls back to day 1 on junk', () => {
+    assert.strictEqual(clampDayNumber('nope', 10), 1);
+    assert.strictEqual(clampDayNumber(undefined, 10), 1);
+  });
+  it('rounds fractions', () => assert.strictEqual(clampDayNumber(3.7, 10), 4));
+  it('survives an empty trip', () => assert.strictEqual(clampDayNumber(5, 0), 1));
 });
 
 describe('範例資料完整性', () => {
