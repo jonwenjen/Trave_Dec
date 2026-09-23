@@ -3,296 +3,461 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="2307 志賀高原滑雪旅行 — 10 日行程駕駛艙，離線可用的行前與現場工具" />
-  <meta name="theme-color" content="#1b1a18" />
+  <meta name="description" content="2307 志賀高原滑雪旅行 — 10 日滑雪全攻略與行程駕駛艙，標高 2,307m 頂級粉雪與離線工具" />
+  <meta name="theme-color" content="#1d3a33" />
   <meta name="color-scheme" content="light dark" />
-  <title>Trave_Dec — 2307 志賀高原滑雪旅行</title>
+  <title>2307 志賀高原滑雪旅行 — 10 日滑雪攻略與行程駕駛艙</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛷️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
   <a class="skip-link" href="#main-content">跳到主要內容</a>
 
-  <div id="app">
-    <!-- ═══ Top bar ═══ -->
-    <header class="top-bar" role="banner">
-      <div class="top-bar__brand">
-        <span class="top-bar__mark" aria-hidden="true">⛷</span>
-        <span class="top-bar__names">
-          <span class="top-bar__title">2307 志賀高原</span>
-          <span class="top-bar__subtitle" id="trip-daterange">2026/12/11 – 12/20</span>
-        </span>
-      </div>
-      <div class="top-bar__right">
-        <span id="offline-badge" class="offline-badge" role="status" aria-live="polite" hidden>離線模式</span>
-        <button type="button" class="top-bar__theme-btn" id="theme-toggle" aria-label="切換深色模式" title="切換深色模式">🌓</button>
-        <div class="party-control">
-          <span class="party-control__label" id="party-label" aria-hidden="true">👥</span>
-          <button type="button" class="party-control__btn" id="party-minus" aria-label="減少一位團員">−</button>
-          <input type="number" id="party-size" class="party-control__input"
-                 min="1" max="20" step="1" value="6" inputmode="numeric"
-                 aria-labelledby="party-label" aria-describedby="party-hint" />
-          <button type="button" class="party-control__btn" id="party-plus" aria-label="增加一位團員">＋</button>
+  <div id="app" class="app-root">
+    <!-- ═══ 黏性頂部導航 (Sticky Navigation) ═══ -->
+    <header class="top-nav" role="banner">
+      <div class="top-nav__inner">
+        <a href="#hero" class="top-nav__brand" aria-label="回到首頁">
+          <span class="top-nav__logo" aria-hidden="true">⛷️</span>
+          <span class="top-nav__brand-text">
+            <span class="top-nav__brand-title">2307 志賀高原</span>
+            <span class="top-nav__brand-subtitle">10 日滑雪全攻略</span>
+          </span>
+        </a>
+
+        <nav class="top-nav__menu" aria-label="主要章節導覽">
+          <a href="#overview" class="top-nav__link" data-nav-target="overview">總覽</a>
+          <a href="#itinerary" class="top-nav__link" data-nav-target="itinerary">行程</a>
+          <a href="#arrival" class="top-nav__link" data-nav-target="arrival">抵達方案</a>
+          <a href="#dining" class="top-nav__link" data-nav-target="dining">吃喝</a>
+          <a href="#guide" class="top-nav__link" data-nav-target="guide">攻略</a>
+          <a href="#tools" class="top-nav__link" data-nav-target="tools">隨身工具</a>
+        </nav>
+
+        <div class="top-nav__actions">
+          <span id="offline-badge" class="offline-badge" role="status" aria-live="polite" hidden>離線模式</span>
+          
+          <div class="party-control" title="調整團員人數，即時分攤車資與預算">
+            <span class="party-control__icon" aria-hidden="true">👥</span>
+            <button type="button" class="party-control__btn" id="party-minus" aria-label="減少一位團員">−</button>
+            <input type="number" id="party-size" class="party-control__input"
+                   min="1" max="20" step="1" value="6" inputmode="numeric"
+                   aria-label="團員人數" />
+            <button type="button" class="party-control__btn" id="party-plus" aria-label="增加一位團員">＋</button>
+            <span class="party-control__unit">人</span>
+          </div>
+
+          <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="切換深色/淺色模式" title="切換深色模式">🌓</button>
         </div>
-        <span id="party-hint" class="visually-hidden">團員人數，用於分攤計程車與包車費用</span>
       </div>
     </header>
 
-    <!-- ═══ Main ═══ -->
-    <main class="main-content" id="main-content">
+    <!-- ═══ 主要單頁內容 (Main Content) ═══ -->
+    <main id="main-content" class="main-flow">
 
-      <!-- ────────── 行程 OPERATE ────────── -->
-      <section class="tab-panel" id="panel-operate" role="tabpanel" aria-labelledby="tab-operate">
-
-        <div class="cockpit">
-          <p class="cockpit__phase" id="trip-phase"></p>
-          <div class="day-hero" id="day-hero"></div>
-          <div class="now-card" id="now-card"></div>
-        </div>
-
-        <nav class="day-rail" aria-label="日期導覽">
-          <button type="button" class="day-rail__arrow" id="day-prev" aria-label="前一天">‹</button>
-          <div class="day-rail__track" id="day-nav" role="group" aria-label="第幾天"></div>
-          <button type="button" class="day-rail__arrow" id="day-next" aria-label="後一天">›</button>
-          <button type="button" class="btn-today" id="btn-today" aria-label="跳回今天" hidden>📍 今天</button>
-        </nav>
-
-        <div class="filter-bar">
-          <div class="search-bar">
-            <span class="search-bar__icon" aria-hidden="true">🔍</span>
-            <input type="search" id="search-input" class="search-bar__input"
-                   placeholder="搜尋全程（地點、日文名、備註⋯）" aria-label="搜尋行程"
-                   aria-describedby="search-hint" autocomplete="off" />
-            <button type="button" class="search-bar__clear" id="search-clear" aria-label="清除搜尋" hidden>✕</button>
+      <!-- ────────── 1. HERO 首屏 ────────── -->
+      <section class="hero-section" id="hero" aria-labelledby="hero-title">
+        <div class="hero-container">
+          <div class="hero-badge">
+            <span class="hero-badge__dot" aria-hidden="true"></span>
+            2026/12/11 – 12/20 · 長野・群馬・志賀高原
           </div>
-          <p id="search-hint" class="visually-hidden">搜尋會比對全部 10 天的行程標題、日文名稱與備註</p>
-          <div class="chip-row" id="type-filters" role="group" aria-label="依類型篩選"></div>
-        </div>
 
-        <div id="search-results" class="search-results" hidden></div>
+          <h1 class="hero-title" id="hero-title">
+            2307 志賀高原<br />
+            <span class="hero-title__highlight">10 日滑雪全攻略</span>
+          </h1>
 
-        <div id="day-view">
-          <div id="day-arrival-block" class="day-arrival-block" hidden></div>
-          <ol class="timeline" id="timeline" aria-label="當日行程"></ol>
-          <p class="empty-state" id="timeline-empty" hidden>這一天沒有符合篩選條件的行程。</p>
-        </div>
-
-        <div class="caveat" id="operate-caveat"></div>
-      </section>
-
-      <!-- ────────── 計畫 PLAN ────────── -->
-      <section class="tab-panel" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
-        <h2 class="panel-title">計畫</h2>
-        <p class="panel-lede">人數、轉乘緩衝標準、住宿確認狀態。改動會即時反映到行程與預算，並存在這台裝置上。</p>
-
-        <section class="block" aria-labelledby="buffer-heading">
-          <h3 class="block__title" id="buffer-heading">轉乘緩衝標準</h3>
-          <p class="block__lede">設定你認為「安全」的換乘時間。低於下限視為高風險，介於兩者之間視為需留意。</p>
-          <div class="buffer-controls">
-            <label class="field">
-              <span class="field__label">高風險門檻（分鐘）</span>
-              <input type="number" id="buffer-tight" class="field__input" min="0" max="180" step="5" inputmode="numeric" />
-            </label>
-            <label class="field">
-              <span class="field__label">安全門檻（分鐘）</span>
-              <input type="number" id="buffer-safe" class="field__input" min="0" max="240" step="5" inputmode="numeric" />
-            </label>
-            <button type="button" class="btn btn--quiet" id="buffer-reset">回到預設 15 / 30</button>
-          </div>
-          <p class="block__note" id="buffer-summary" role="status"></p>
-        </section>
-
-        <section class="block" aria-labelledby="risk-heading">
-          <h3 class="block__title" id="risk-heading">需要留意的轉乘</h3>
-          <p class="block__lede">可直接改寫每段的緩衝分鐘，重新評估風險。</p>
-          <ul class="risk-list" id="risk-list"></ul>
-        </section>
-
-        <section class="block" aria-labelledby="lodging-heading">
-          <h3 class="block__title" id="lodging-heading">住宿確認</h3>
-          <p class="block__lede">未確認的住宿會在行程上持續標記，直到你在這裡勾選已訂房。</p>
-          <ul class="lodging-list" id="lodging-list"></ul>
-        </section>
-
-        <section class="block" aria-labelledby="overview-heading">
-          <h3 class="block__title" id="overview-heading">全程一覽</h3>
-          <ol class="overview-list" id="overview-list"></ol>
-        </section>
-
-        <section class="block" aria-labelledby="plans-heading">
-          <h3 class="block__title" id="plans-heading">12/15 朋友抵達方案（成田 T3 06:35 → 2307）</h3>
-          <p class="block__lede">
-            5 位友人預計 12/15（二）06:35 抵達 NRT T3，目標於 <strong>19:00 前</strong> 抵達 Hotel &amp; Onsen 2307。以下為 4 條路線鏈比較，計程車/包車費用依全團人數（<span id="arrival-party-label">6</span> 人）自動分攤。
+          <p class="hero-lead">
+            標高 2,307m 全日本最高粉雪天堂。從成田機場直達雪場交通鏈、初滑票價、大迴轉壓雪刻滑、樹冰巡禮、翠綠硫磺溫泉，到在地精釀與緊急應變手冊。
           </p>
-          <div class="arrival-options" id="plan-options"></div>
-        </section>
 
-        <section class="block" aria-labelledby="playbook-heading">
-          <h3 class="block__title" id="playbook-heading">突發狀況應對</h3>
-          <ul class="playbook" id="playbook"></ul>
-        </section>
-      </section>
-
-      <!-- ────────── 預算 BUDGET ────────── -->
-      <section class="tab-panel" id="panel-budget" role="tabpanel" aria-labelledby="tab-budget" hidden>
-        <h2 class="panel-title">預算</h2>
-        <p class="panel-lede">每人概估金額，可直接編輯。實際費用因匯率、購票時機與住宿方案而異。</p>
-
-        <div class="totals">
-          <div class="totals__item">
-            <span class="t-eyebrow">每人總計</span>
-            <p class="totals__value" id="budget-total">¥0</p>
-          </div>
-          <div class="totals__item totals__item--muted">
-            <span class="t-eyebrow">全團（<span id="budget-party-label">6</span> 人）</span>
-            <p class="totals__value" id="budget-group-total">¥0</p>
-          </div>
-        </div>
-
-        <div id="budget-bar-container"></div>
-
-        <div class="budget-grid" id="budget-grid"></div>
-
-        <div class="action-group">
-          <button type="button" class="btn btn--quiet" id="budget-reset">還原預算為範例金額</button>
-        </div>
-
-        <section class="block" aria-labelledby="itinerary-cost-heading">
-          <h3 class="block__title" id="itinerary-cost-heading">行程中已標註的費用</h3>
-          <p class="block__lede">來自行程項目上的票價與車資，依目前人數分攤。這是獨立於上方預算的對照值，不會互相覆蓋。</p>
-          <ul class="cost-breakdown" id="cost-breakdown"></ul>
-          <p class="cost-breakdown__total" id="itinerary-cost-total"></p>
-        </section>
-
-        <div class="caveat">
-          <strong>⚠️ 規劃估算</strong>：金額來自 2026/09 擷取的公開票價與經驗值，未連接任何即時訂價或匯率服務。
-        </div>
-      </section>
-
-      <!-- ────────── 隨身 FIELD KIT ────────── -->
-      <section class="tab-panel" id="panel-fieldkit" role="tabpanel" aria-labelledby="tab-fieldkit" hidden>
-        <h2 class="panel-title">隨身工具</h2>
-        <p class="panel-lede">現場用的東西：給對方看的日文大字卡、念得出來的短句、打得出去的電話。全部離線可用。</p>
-
-        <div class="search-bar search-bar--inline">
-          <span class="search-bar__icon" aria-hidden="true">🔍</span>
-          <input type="search" id="field-search" class="search-bar__input"
-                 placeholder="搜尋地點或短句" aria-label="搜尋隨身工具" autocomplete="off" />
-          <button type="button" class="search-bar__clear" id="field-search-clear" aria-label="清除搜尋" hidden>✕</button>
-        </div>
-
-        <section class="block" aria-labelledby="dest-heading">
-          <h3 class="block__title" id="dest-heading">日文大字卡</h3>
-          <p class="block__lede">點卡片放大成全螢幕，直接給司機或站務人員看。</p>
-          <div class="dest-cards" id="dest-cards"></div>
-        </section>
-
-        <section class="block" aria-labelledby="phrase-heading">
-          <h3 class="block__title" id="phrase-heading">情境短句</h3>
-          <p class="block__lede" id="speech-note"></p>
-          <div class="chip-row" id="phrase-cats" role="tablist" aria-label="短句分類"></div>
-          <ul class="phrase-list" id="phrase-list"></ul>
-        </section>
-
-        <section class="block" aria-labelledby="dining-heading">
-          <h3 class="block__title" id="dining-heading">🍽️ 更多吃喝（餐廳・居酒屋・酒吧）</h3>
-          <p class="block__lede">志賀高原（橫手山・熊之湯・一の瀬・焼額山・奧志賀）與沿途城市（高崎・佐久平・長野・橫濱）吃喝指南。依區域與分類篩選，點 ⤢ 可放大店名給店家看。</p>
-
-          <div class="dining-filter-controls">
-            <div class="chip-row" id="dining-cat-filters" role="tablist" aria-label="吃喝分類">
-              <button type="button" class="chip chip--active" data-dining-cat="all" aria-pressed="true">全部</button>
-              <button type="button" class="chip" data-dining-cat="eat" aria-pressed="false">🍜 吃（餐廳・定食・拉麵・甜點）</button>
-              <button type="button" class="chip" data-dining-cat="drink" aria-pressed="false">🍺 喝／酒吧（居酒屋・精釀・酒廊）</button>
+          <!-- 速覽卡 -->
+          <div class="hero-glance">
+            <div class="glance-card">
+              <span class="glance-card__icon" aria-hidden="true">📅</span>
+              <div class="glance-card__content">
+                <span class="glance-card__label">旅行日程</span>
+                <span class="glance-card__value">12/11 – 12/20（10 天）</span>
+              </div>
             </div>
-            <div class="dining-subfilters">
-              <label class="field field--inline">
-                <span class="field__label">區域</span>
-                <select id="dining-region-select" class="field__select" aria-label="依區域篩選吃喝">
-                  <option value="all">全部區域</option>
-                </select>
-              </label>
-              <div class="search-bar search-bar--compact">
-                <span class="search-bar__icon" aria-hidden="true">🔍</span>
-                <input type="search" id="dining-search-input" class="search-bar__input"
-                       placeholder="搜尋店名、料理、地酒、招牌..." aria-label="搜尋吃喝" autocomplete="off" />
-                <button type="button" class="search-bar__clear" id="dining-search-clear" aria-label="清除搜尋" hidden>✕</button>
+            <div class="glance-card">
+              <span class="glance-card__icon" aria-hidden="true">🎿</span>
+              <div class="glance-card__content">
+                <span class="glance-card__label">滑雪板日</span>
+                <span class="glance-card__value">7 天高山全雪域</span>
+              </div>
+            </div>
+            <div class="glance-card">
+              <span class="glance-card__icon" aria-hidden="true">🏨</span>
+              <div class="glance-card__content">
+                <span class="glance-card__label">核心旅宿</span>
+                <span class="glance-card__value">Hotel &amp; Onsen 2307</span>
+              </div>
+            </div>
+            <div class="glance-card">
+              <span class="glance-card__icon" aria-hidden="true">👥</span>
+              <div class="glance-card__content">
+                <span class="glance-card__label">全團人數</span>
+                <span class="glance-card__value"><strong id="hero-party-count">6</strong> 人（車資分攤連動）</span>
               </div>
             </div>
           </div>
-          <p class="dining-count" id="dining-count"></p>
-          <ul class="dining-list" id="dining-list"></ul>
-        </section>
 
-        <section class="block" aria-labelledby="emergency-heading">
-          <h3 class="block__title" id="emergency-heading">緊急聯絡</h3>
-          <p class="block__lede">110 警察／119 消防・救護車。在日本國內直撥，不需加國碼。</p>
-          <ul class="emergency-list" id="emergency-list"></ul>
-        </section>
-
-        <section class="block" aria-labelledby="links-heading">
-          <h3 class="block__title" id="links-heading">官方資源</h3>
-          <p class="block__lede">需要連網。出發前與現場都以這些官方頁面為準。</p>
-          <ul class="official-links" id="official-links"></ul>
-        </section>
-
-        <section class="block" aria-labelledby="data-heading">
-          <h3 class="block__title" id="data-heading">資料與備份</h3>
-          <div class="action-group">
-            <button type="button" class="btn btn--primary" id="btn-export-ics">📅 下載 .ics 行事曆</button>
-            <button type="button" class="btn" id="btn-export-json">📋 匯出 JSON</button>
-            <button type="button" class="btn" id="btn-import-json">📥 匯入 JSON</button>
-            <button type="button" class="btn" id="btn-share">🔗 分享設定連結</button>
+          <!-- CTA 快捷導航按鈕 -->
+          <div class="hero-cta-group">
+            <a href="#itinerary" class="btn btn--coral btn--lg">
+              <span>📅 查看每日行程</span>
+            </a>
+            <a href="#guide" class="btn btn--pine btn--lg">
+              <span>📖 閱讀滑雪全攻略</span>
+            </a>
+            <a href="#dining" class="btn btn--warm btn--lg">
+              <span>🍜 在地吃喝指南</span>
+            </a>
+            <a href="#arrival" class="btn btn--ghost btn--lg">
+              <span>🚌 12/15 朋友抵達方案</span>
+            </a>
           </div>
-          <p class="block__note" id="storage-note"></p>
-          <div class="action-group">
-            <button type="button" class="btn btn--danger" id="btn-reset">🔄 清除本機修改，回到範例</button>
+        </div>
+      </section>
+
+      <!-- ────────── 2. 總覽 OVERVIEW ────────── -->
+      <section class="section section--overview" id="overview" aria-labelledby="overview-heading">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="section-eyebrow">Trip Overview</span>
+            <h2 class="section-title" id="overview-heading">全程總覽 &amp; 關鍵數字</h2>
+            <p class="section-desc">10 天跨越千葉、群馬、長野與神奈川。全團費用依當前人數即時分攤計算。</p>
           </div>
-          <input type="file" id="import-file" accept="application/json,.json" class="visually-hidden" tabindex="-1" />
-        </section>
 
-        <section class="block" aria-labelledby="live-heading">
-          <h3 class="block__title" id="live-heading">即時資料狀態</h3>
-          <ul class="live-status" id="live-status"></ul>
-          <p class="block__note">本應用刻意不顯示任何即時天氣、雪況、纜車或列車資訊。畫面上看到的都是規劃期擷取的靜態資料。</p>
-        </section>
+          <!-- 4 關鍵數字卡片 -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-card__number" id="stat-total-days">10</span>
+              <span class="metric-card__unit">天</span>
+              <p class="metric-card__label">總旅行天數</p>
+              <p class="metric-card__hint">12/11 成田至 12/20 返程</p>
+            </div>
+            <div class="metric-card">
+              <span class="metric-card__number" id="stat-ski-days">7</span>
+              <span class="metric-card__unit">天</span>
+              <p class="metric-card__label">滑雪板日</p>
+              <p class="metric-card__hint">丸沼、高峰、橫手山・澀峠</p>
+            </div>
+            <div class="metric-card">
+              <span class="metric-card__number" id="stat-party-size">6</span>
+              <span class="metric-card__unit">人</span>
+              <p class="metric-card__label">全團人數</p>
+              <p class="metric-card__hint">頂部隨時微調分攤</p>
+            </div>
+            <div class="metric-card metric-card--highlight">
+              <span class="metric-card__number" id="stat-budget-pp">¥195,000</span>
+              <p class="metric-card__label">每人預估總預算</p>
+              <p class="metric-card__hint">全團合計約 <strong id="stat-budget-group">¥1,170,000</strong></p>
+            </div>
+          </div>
 
-        <div class="caveat" id="source-caveat"></div>
+          <!-- Day 1–10 橫向時間軸 (地圖條) -->
+          <div class="days-strip-container">
+            <div class="days-strip-header">
+              <span class="days-strip-title">🗺️ 10 日橫向時間軸（點擊切換每日行程）</span>
+              <span class="days-strip-hint">← 左右滑動查看全程 →</span>
+            </div>
+            <div class="days-strip" id="days-strip" role="tablist" aria-label="10 日時間軸">
+              <!-- JS 動態填入 10 天預覽卡 -->
+            </div>
+          </div>
+
+          <!-- 預算與突發應對摺疊面板 -->
+          <details class="accordion-panel" id="overview-budget-accordion">
+            <summary class="accordion-panel__summary">
+              <span class="accordion-panel__title">💰 查看預算明細與行程費用對照</span>
+              <span class="accordion-panel__icon" aria-hidden="true">▾</span>
+            </summary>
+            <div class="accordion-panel__body">
+              <p class="accordion-panel__lead">金額為每人概估，支援自訂編輯。改動會即時反映至全團總計並保存在本機。</p>
+              <div class="budget-breakdown-wrapper">
+                <div class="budget-grid" id="budget-grid"></div>
+                <div class="budget-actions">
+                  <button type="button" class="btn btn--quiet btn--sm" id="budget-reset">還原預算為範例金額</button>
+                </div>
+                <div class="itinerary-cost-box">
+                  <h4 class="itinerary-cost-box__title">行程內已標註之交通與票價小計（目前人數分攤）</h4>
+                  <ul class="cost-breakdown" id="cost-breakdown"></ul>
+                  <p class="cost-breakdown__total" id="itinerary-cost-total"></p>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- ────────── 3. 每日行程 ITINERARY ────────── -->
+      <section class="section section--itinerary" id="itinerary" aria-labelledby="itinerary-heading">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="section-eyebrow">Daily Itinerary</span>
+            <h2 class="section-title" id="itinerary-heading">每日行程駕駛艙</h2>
+            <p class="section-desc">精確時間軸與轉乘檢驗。點擊卡片可展開備註與官方來源，已過行程自動灰化。</p>
+          </div>
+
+          <!-- 日期選擇導覽軌道 -->
+          <nav class="itinerary-rail" aria-label="日期導覽軌道">
+            <button type="button" class="rail-arrow" id="day-prev" aria-label="前一天">‹</button>
+            <div class="rail-track" id="day-nav" role="tablist" aria-label="選擇第幾天"></div>
+            <button type="button" class="rail-arrow" id="day-next" aria-label="後一天">›</button>
+            <button type="button" class="btn-today" id="btn-today" aria-label="跳回今天" hidden>📍 今天</button>
+          </nav>
+
+          <!-- 搜尋與篩選列 -->
+          <div class="itinerary-filter-bar">
+            <div class="search-box">
+              <span class="search-box__icon" aria-hidden="true">🔍</span>
+              <input type="search" id="search-input" class="search-box__input"
+                     placeholder="搜尋全程（地點、新幹線、橫手山、晚餐⋯）"
+                     aria-label="搜尋行程" autocomplete="off" />
+              <button type="button" class="search-box__clear" id="search-clear" aria-label="清除搜尋" hidden>✕</button>
+            </div>
+            <div class="filter-chips-row" id="type-filters" role="group" aria-label="依類型篩選行程"></div>
+          </div>
+
+          <!-- 搜尋結果面板 -->
+          <div id="search-results" class="search-results-panel" hidden></div>
+
+          <!-- 當日重點 Hero 卡片 -->
+          <div class="day-hero-card" id="day-hero"></div>
+
+          <!-- 垂直時間軸 -->
+          <div class="timeline-container">
+            <ol class="timeline" id="timeline" aria-label="當日行程事件時間軸"></ol>
+            <p class="timeline-empty" id="timeline-empty" hidden>這一天沒有符合篩選條件的行程項目。</p>
+          </div>
+
+          <!-- 行程免責宣告 -->
+          <div class="planning-caveat" id="operate-caveat"></div>
+        </div>
+      </section>
+
+      <!-- ────────── 4. 朋友抵達方案 ARRIVAL OPTIONS ────────── -->
+      <section class="section section--arrival" id="arrival" aria-labelledby="arrival-heading">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="section-eyebrow">December 15 Special</span>
+            <h2 class="section-title" id="arrival-heading">12/15 朋友抵達方案作戰板</h2>
+            <p class="section-desc">
+              5 位友人預計 12/15（二）06:35 抵達 NRT T3，目標於 <strong>19:00 前</strong> 抵達 Hotel &amp; Onsen 2307 享用晚餐。以下為 4 條路線鏈比較，計程車/包車費用依全團（<span id="arrival-party-label">6</span> 人）自動分攤。
+            </p>
+          </div>
+
+          <div class="arrival-options-grid" id="plan-options"></div>
+
+          <div class="arrival-tip-box">
+            <div class="arrival-tip-box__icon">💡</div>
+            <div class="arrival-tip-box__text">
+              <strong>上山轉乘黃金準則</strong>：最晚必須搭上長野站 17:00–17:30 出發的急行巴士或預約計程車。山區道路入夜結冰易打滑，若遇下雪天請至少多預留 45 分鐘行車時間。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────── 5. 在地吃喝指南 DINING ────────── -->
+      <section class="section section--dining" id="dining" aria-labelledby="dining-heading">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="section-eyebrow">Food &amp; Drinks</span>
+            <h2 class="section-title" id="dining-heading">在地吃喝指南（美食・居酒屋・酒吧）</h2>
+            <p class="section-desc">
+              收錄志賀高原四大區與沿途城市（高崎、佐久平、長野、橫濱）精選名店。點擊「⤢ 放大」可跳出全螢幕大字卡供司機或店家確認。
+            </p>
+          </div>
+
+          <!-- 分類與區域篩選列 -->
+          <div class="dining-controls">
+            <div class="category-tabs" id="dining-cat-filters" role="tablist" aria-label="吃喝類別">
+              <button type="button" class="cat-tab cat-tab--active" data-dining-cat="all" aria-pressed="true">全部精選</button>
+              <button type="button" class="cat-tab" data-dining-cat="eat" aria-pressed="false">🍜 吃（餐廳・定食・拉麵）</button>
+              <button type="button" class="cat-tab" data-dining-cat="drink" aria-pressed="false">🍺 喝／酒吧（居酒屋・精釀・地酒）</button>
+            </div>
+
+            <div class="dining-subfilters">
+              <div class="select-wrapper">
+                <label for="dining-region-select" class="visually-hidden">區域篩選</label>
+                <select id="dining-region-select" class="custom-select" aria-label="依區域篩選吃喝">
+                  <option value="all">📍 全部區域</option>
+                </select>
+              </div>
+
+              <div class="search-box search-box--compact">
+                <span class="search-box__icon" aria-hidden="true">🔍</span>
+                <input type="search" id="dining-search-input" class="search-box__input"
+                       placeholder="搜尋料理、店名、地酒、招牌..." aria-label="搜尋吃喝" autocomplete="off" />
+                <button type="button" class="search-box__clear" id="dining-search-clear" aria-label="清除搜尋" hidden>✕</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="dining-count-indicator" id="dining-count"></p>
+          <div class="dining-cards-grid" id="dining-list"></div>
+        </div>
+      </section>
+
+      <!-- ────────── 6. 滑雪全攻略 SKI & TRAVEL GUIDE ────────── -->
+      <section class="section section--guide" id="guide" aria-labelledby="guide-heading">
+        <div class="section-container">
+          <div class="section-header section-header--editorial">
+            <span class="section-eyebrow">Comprehensive Guide</span>
+            <h2 class="section-title" id="guide-heading">志賀高原滑雪全攻略</h2>
+            <p class="section-desc">
+              編輯式深度長文：整合初滑票價、標高 2,307m 刻滑、樹冰絕景、成田直送交通、一泊二食會席、雪具託運與高山急難救援。
+            </p>
+          </div>
+
+          <!-- 攻略章節錨點導覽導引列 -->
+          <div class="guide-nav-bar" id="guide-nav-bar" aria-label="攻略章節切換">
+            <!-- 由 JS 動態生成 6 大章節導航按鈕 -->
+          </div>
+
+          <!-- 攻略篇章容器 -->
+          <div class="guide-articles-flow" id="guide-articles">
+            <!-- 由 JS 動態生成 6 大篇章 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────── 7. 隨身工具 FIELD KIT ────────── -->
+      <section class="section section--tools" id="tools" aria-labelledby="tools-heading">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="section-eyebrow">Travel Field Kit</span>
+            <h2 class="section-title" id="tools-heading">隨身工具 &amp; 離線備份</h2>
+            <p class="section-desc">現場離線必備：給司機看的日文大字卡、語音發音短句、一鍵緊急電話與行事曆匯出。</p>
+          </div>
+
+          <!-- 搜尋工具 -->
+          <div class="search-box search-box--inline">
+            <span class="search-box__icon" aria-hidden="true">🔍</span>
+            <input type="search" id="field-search" class="search-box__input"
+                   placeholder="快速搜尋字卡地點或應急短句..." aria-label="搜尋隨身工具" autocomplete="off" />
+            <button type="button" class="search-box__clear" id="field-search-clear" aria-label="清除搜尋" hidden>✕</button>
+          </div>
+
+          <!-- 工具卡片區塊 1：日文大字卡 -->
+          <div class="tools-block" id="block-dest-cards">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">🪪 日文大字卡（全螢幕顯示）</h3>
+              <p class="tools-block__desc">點擊任一卡片即可放大為全螢幕，直接將手機轉向司機或站務人員展示。</p>
+            </div>
+            <div class="dest-cards-grid" id="dest-cards"></div>
+          </div>
+
+          <!-- 工具卡片區塊 2：情境短句 (支援發音) -->
+          <div class="tools-block" id="block-phrases">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">🗣️ 情境短句（支援語音朗讀）</h3>
+              <p class="tools-block__desc" id="speech-note">提供日文原文、中文意涵與羅馬拼音。點擊發音按鈕可由語音合成器念出。</p>
+            </div>
+            <div class="phrase-tabs-row" id="phrase-cats" role="tablist" aria-label="短句類別"></div>
+            <ul class="phrases-list" id="phrase-list"></ul>
+          </div>
+
+          <!-- 工具卡片區塊 3：緊急聯絡電話 -->
+          <div class="tools-block" id="block-emergency">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">🚨 緊急聯絡與雪場巡邏隊</h3>
+              <p class="tools-block__desc">在日本國內可直接點擊撥號，不需額外加國碼。</p>
+            </div>
+            <div class="emergency-cards-grid" id="emergency-list"></div>
+          </div>
+
+          <!-- 工具卡片區塊 4：突發狀況應對清單 -->
+          <div class="tools-block" id="block-playbook">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">⚡ 突發狀況離線應變手冊</h3>
+              <p class="tools-block__desc">遭遇大雪封路、巴士停駛、強風纜車停擺或受傷時的標準應變處置 SOP。</p>
+            </div>
+            <ul class="playbook-list" id="playbook"></ul>
+          </div>
+
+          <!-- 工具卡片區塊 5：資料匯出與本機設定 -->
+          <div class="tools-block" id="block-data-tools">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">💾 資料備份與行事曆同步</h3>
+              <p class="tools-block__desc">將本行程下載至手機行事曆（.ics），或匯出/匯入個人備忘與人數設定。</p>
+            </div>
+            <div class="data-actions-row">
+              <button type="button" class="btn btn--coral" id="btn-export-ics">📅 下載 .ics 行事曆</button>
+              <button type="button" class="btn btn--warm" id="btn-export-json">📋 匯出 JSON</button>
+              <button type="button" class="btn btn--warm" id="btn-import-json">📥 匯入 JSON</button>
+              <button type="button" class="btn btn--ghost" id="btn-share">🔗 複製分享連結</button>
+            </div>
+            <p class="storage-status-note" id="storage-note"></p>
+            <div class="data-actions-danger">
+              <button type="button" class="btn btn--danger btn--sm" id="btn-reset">🔄 清除本機修改，還原預設資料</button>
+            </div>
+            <input type="file" id="import-file" accept="application/json,.json" class="visually-hidden" tabindex="-1" />
+          </div>
+
+          <!-- 即時資料狀態說明 -->
+          <div class="tools-block" id="block-live-status">
+            <div class="tools-block__header">
+              <h3 class="tools-block__title">📡 資料連線與靜態宣告</h3>
+            </div>
+            <ul class="live-status-list" id="live-status"></ul>
+            <p class="live-status-disclaimer">
+              本應用專為高山斷網與離線設計，刻意不連接即時天氣或即時雪況 API，所有班次與票價為規劃期公開資料，避免在高山上因連線失敗而卡死。
+            </p>
+          </div>
+        </div>
       </section>
 
     </main>
 
-    <!-- ═══ Tab bar ═══ -->
-    <nav class="tab-bar" role="tablist" aria-label="主導覽">
-      <button class="tab-bar__btn" role="tab" id="tab-operate" aria-controls="panel-operate" aria-selected="true" data-tab="operate">
-        <span class="tab-bar__icon" aria-hidden="true">🧭</span><span class="tab-bar__text">行程</span>
-      </button>
-      <button class="tab-bar__btn" role="tab" id="tab-plan" aria-controls="panel-plan" aria-selected="false" data-tab="plan" tabindex="-1">
-        <span class="tab-bar__icon" aria-hidden="true">🗺️</span><span class="tab-bar__text">計畫</span>
-      </button>
-      <button class="tab-bar__btn" role="tab" id="tab-budget" aria-controls="panel-budget" aria-selected="false" data-tab="budget" tabindex="-1">
-        <span class="tab-bar__icon" aria-hidden="true">💴</span><span class="tab-bar__text">預算</span>
-      </button>
-      <button class="tab-bar__btn" role="tab" id="tab-fieldkit" aria-controls="panel-fieldkit" aria-selected="false" data-tab="fieldkit" tabindex="-1">
-        <span class="tab-bar__icon" aria-hidden="true">🎒</span><span class="tab-bar__text">隨身</span>
-      </button>
-    </nav>
-
-    <!-- ═══ Fullscreen destination card ═══ -->
-    <div class="fullscreen-card" id="fullscreen-card" role="dialog" aria-modal="true"
-         aria-labelledby="fc-ja" hidden>
-      <button type="button" class="fullscreen-card__close" id="fullscreen-close" aria-label="關閉大字卡">✕</button>
-      <p class="fullscreen-card__ja" id="fc-ja" data-copy-card title="點擊複製"></p>
-      <p class="fullscreen-card__zh" id="fc-zh"></p>
-      <p class="fullscreen-card__address" id="fc-address"></p>
-      <a class="fullscreen-card__phone" id="fc-phone" href="#" hidden></a>
-      <p class="fullscreen-card__hint">把螢幕轉給對方看</p>
+    <!-- ═══ 全螢幕大字卡對話框 (Fullscreen Dialog) ═══ -->
+    <div class="fullscreen-dialog" id="fullscreen-card" role="dialog" aria-modal="true" aria-labelledby="fc-ja" hidden>
+      <div class="fullscreen-dialog__backdrop" id="fullscreen-backdrop"></div>
+      <div class="fullscreen-dialog__content">
+        <button type="button" class="fullscreen-dialog__close" id="fullscreen-close" aria-label="關閉大字卡">✕</button>
+        <div class="fullscreen-dialog__body">
+          <p class="fullscreen-dialog__ja" id="fc-ja" data-copy-card title="點擊即可複製日文名稱"></p>
+          <p class="fullscreen-dialog__zh" id="fc-zh"></p>
+          <p class="fullscreen-dialog__address" id="fc-address"></p>
+          <a class="fullscreen-dialog__phone" id="fc-phone" href="#" hidden></a>
+        </div>
+        <p class="fullscreen-dialog__footer">📱 請將手機轉向對方展示</p>
+      </div>
     </div>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <!-- 提示訊息浮層 (Toast) -->
+    <div class="toast-notification" id="toast" role="status" aria-live="polite"></div>
 
-    <footer class="app-footer">
-      <p>Trave_Dec — 行程事實改編自 <a href="https://jonwenjen.github.io/japan-ski-2026/" target="_blank" rel="noopener">2307 Carve Log</a></p>
-      <p>所有時刻與票價為規劃估算，出發前請向營運單位查證。</p>
+    <!-- ═══ 頁尾 (Footer) ═══ -->
+    <footer class="app-footer" role="contentinfo">
+      <div class="app-footer__container">
+        <div class="app-footer__section">
+          <h4 class="app-footer__title">官方權威資源連結</h4>
+          <ul class="official-links-list" id="official-links"></ul>
+        </div>
+
+        <div class="app-footer__section app-footer__disclaimer">
+          <h4 class="app-footer__title">時效與免責說明</h4>
+          <p>
+            本網站所有時刻表、交通費用、初滑纜車票價與營業時段均擷取自 2026/09 之官方公開資料與前季經驗值，作為行前規劃估算參考，非即時保證資訊。2026–2027 冬季時刻預計於 11 月由各大營運單位陸續公告，出發前請務必至官方網站查證。
+          </p>
+          <p class="app-footer__attribution">
+            Trave_Dec — 2307 志賀高原滑雪旅行 · 重新製作：agy CLI — gemini-3.8-flash-high
+          </p>
+        </div>
+
+        <div class="app-footer__bottom">
+          <a href="#hero" class="back-to-top-btn" aria-label="回到頁首">
+            <span>↑ 回到頂部</span>
+          </a>
+        </div>
+      </div>
     </footer>
   </div>
 

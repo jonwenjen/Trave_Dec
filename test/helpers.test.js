@@ -50,6 +50,11 @@ import {
   computeArrivalOptionSummary,
   filterDiningPlaces,
   getDiningRegions,
+  computeTripStats,
+  getGuideChapter,
+  searchGuideChapters,
+  filterGuideByTag,
+  formatGuideReadingTime,
 } from '../src/helpers.js';
 import {
   SAMPLE_ITINERARY,
@@ -57,6 +62,7 @@ import {
   SAMPLE_BUDGET,
   FRIEND_ARRIVAL_OPTIONS,
   DINING_PLACES,
+  GUIDE_CHAPTERS,
 } from '../src/data/itinerary.js';
 
 describe('金額', () => {
@@ -852,4 +858,144 @@ describe('更多吃喝 (Dining & Drinks)', () => {
     });
   });
 });
+
+describe('行程關鍵數據 (computeTripStats)', () => {
+  it('computes total days, ski days, party size and budget totals', () => {
+    const stats = computeTripStats(SAMPLE_ITINERARY, 6, SAMPLE_BUDGET);
+    assert.strictEqual(stats.totalDays, 10);
+    assert.strictEqual(stats.skiDays, 7);
+    assert.strictEqual(stats.partySize, 6);
+    assert.strictEqual(stats.budgetPerPerson, 195000);
+    assert.strictEqual(stats.budgetGroup, 195000 * 6);
+    assert.ok(stats.eventCount > 20);
+  });
+
+  it('adapts when party size changes', () => {
+    const stats = computeTripStats(SAMPLE_ITINERARY, 4, SAMPLE_BUDGET);
+    assert.strictEqual(stats.partySize, 4);
+    assert.strictEqual(stats.budgetGroup, 195000 * 4);
+  });
+
+  it('handles empty or malformed inputs gracefully', () => {
+    const stats = computeTripStats([], 0, []);
+    assert.strictEqual(stats.totalDays, 0);
+    assert.strictEqual(stats.skiDays, 0);
+    assert.strictEqual(stats.partySize, 1);
+    assert.strictEqual(stats.budgetPerPerson, 0);
+    assert.strictEqual(stats.budgetGroup, 0);
+  });
+});
+
+describe('滑雪全攻略 (Guide Chapters & Helpers)', () => {
+  describe('getGuideChapter', () => {
+    it('retrieves an existing chapter by id', () => {
+      const chapter = getGuideChapter(GUIDE_CHAPTERS, 'ski');
+      assert.ok(chapter);
+      assert.strictEqual(chapter.id, 'ski');
+      assert.ok(chapter.title.includes('滑雪'));
+    });
+
+    it('returns null for nonexistent chapter id', () => {
+      assert.strictEqual(getGuideChapter(GUIDE_CHAPTERS, 'unknown-xyz'), null);
+      assert.strictEqual(getGuideChapter(null, 'ski'), null);
+    });
+  });
+
+  describe('searchGuideChapters', () => {
+    it('finds chapters matching keyword in title or content', () => {
+      const results = searchGuideChapters(GUIDE_CHAPTERS, '樹冰');
+      assert.ok(results.length >= 1);
+      assert.strictEqual(results[0].id, 'ski');
+    });
+
+    it('finds chapters matching keyword in transport (宅急便)', () => {
+      const results = searchGuideChapters(GUIDE_CHAPTERS, '宅急便');
+      assert.ok(results.length >= 1);
+      assert.strictEqual(results[0].id, 'transport');
+    });
+
+    it('returns empty array on empty or whitespace query', () => {
+      assert.deepStrictEqual(searchGuideChapters(GUIDE_CHAPTERS, ''), []);
+      assert.deepStrictEqual(searchGuideChapters(GUIDE_CHAPTERS, '   '), []);
+      assert.deepStrictEqual(searchGuideChapters(null, 'ski'), []);
+    });
+  });
+
+  describe('filterGuideByTag', () => {
+    it('filters chapters by tag', () => {
+      const res = filterGuideByTag(GUIDE_CHAPTERS, 'transport');
+      assert.ok(res.length >= 1);
+      assert.ok(res.every((c) => c.tags.includes('transport')));
+    });
+
+    it('returns all chapters when tag is "all" or empty', () => {
+      const all = filterGuideByTag(GUIDE_CHAPTERS, 'all');
+      assert.strictEqual(all.length, GUIDE_CHAPTERS.length);
+    });
+  });
+
+  describe('formatGuideReadingTime', () => {
+    it('formats character count into reading minutes', () => {
+      assert.strictEqual(formatGuideReadingTime(1200), '約 3 分鐘閱讀');
+      assert.strictEqual(formatGuideReadingTime(400), '約 1 分鐘閱讀');
+      assert.strictEqual(formatGuideReadingTime(0), '約 1 分鐘閱讀');
+    });
+  });
+
+  describe('GUIDE_CHAPTERS 資料完整性', () => {
+    it('contains all 6 required editorial chapters', () => {
+      assert.strictEqual(GUIDE_CHAPTERS.length, 6);
+      const ids = GUIDE_CHAPTERS.map((c) => c.id);
+      assert.deepStrictEqual(ids, ['ski', 'transport', 'lodging', 'dining', 'prep', 'safety']);
+    });
+
+    it('each chapter has id, title, subtitle, icon, summary, tags, and sections', () => {
+      for (const ch of GUIDE_CHAPTERS) {
+        assert.ok(ch.id, `缺少 id`);
+        assert.ok(ch.title, `缺少 title: ${ch.id}`);
+        assert.ok(ch.subtitle, `缺少 subtitle: ${ch.id}`);
+        assert.ok(ch.icon, `缺少 icon: ${ch.id}`);
+        assert.ok(ch.summary, `缺少 summary: ${ch.id}`);
+        assert.ok(Array.isArray(ch.tags) && ch.tags.length > 0, `缺少 tags: ${ch.id}`);
+        assert.ok(Array.isArray(ch.sections) && ch.sections.length > 0, `缺少 sections: ${ch.id}`);
+        for (const sec of ch.sections) {
+          assert.ok(sec.title, `章節缺少 title: ${ch.id}`);
+          assert.ok(sec.content, `章節缺少 content: ${ch.id}`);
+        }
+      }
+    });
+
+    it('covers all prompt-specified facts accurately', () => {
+      const allText = JSON.stringify(GUIDE_CHAPTERS);
+      const requiredFacts = [
+        '初滑',
+        '8:30',
+        '16:30',
+        '橫手山',
+        '刻滑',
+        '樹冰',
+        '夜滑',
+        '成田',
+        '志賀',
+        '宅急便',
+        '末班巴士',
+        '計程車',
+        '2307',
+        '一泊二食',
+        '熊之湯',
+        '雪具託運',
+        '保險',
+        '現金',
+        '110',
+        '119',
+        '失聯集合點',
+        '大雪',
+      ];
+      for (const fact of requiredFacts) {
+        assert.ok(allText.includes(fact), `攻略內容缺少核心事實: ${fact}`);
+      }
+    });
+  });
+});
+
 

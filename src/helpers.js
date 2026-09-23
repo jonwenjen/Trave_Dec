@@ -992,3 +992,113 @@ export function getDiningRegions(places) {
   return Array.from(set);
 }
 
+/* ═══════════════════════════════════════════
+   行程關鍵數據 (Trip Overview Stats)
+   ═══════════════════════════════════════════ */
+
+/**
+ * 計算行程總覽關鍵數據（總天數、滑雪板日、團員人數、預算金額）。
+ * @param {Array} days
+ * @param {number} [partySize=6]
+ * @param {Array} [budget=[]]
+ * @returns {{
+ *   totalDays: number,
+ *   skiDays: number,
+ *   partySize: number,
+ *   budgetPerPerson: number,
+ *   budgetGroup: number,
+ *   eventCount: number
+ * }}
+ */
+export function computeTripStats(days = [], partySize = 6, budget = []) {
+  const list = Array.isArray(days) ? days : [];
+  const size = Math.max(1, Math.round(Number(partySize) || 1));
+  const totalDays = list.length;
+
+  let skiDays = 0;
+  let eventCount = 0;
+  for (const day of list) {
+    const events = (day && day.events) || [];
+    eventCount += events.length;
+    if (events.some((e) => e.type === 'ski')) {
+      skiDays += 1;
+    }
+  }
+
+  const budgetPerPerson = computeTotalBudget(budget);
+  const budgetGroup = budgetPerPerson * size;
+
+  return {
+    totalDays,
+    skiDays,
+    partySize: size,
+    budgetPerPerson,
+    budgetGroup,
+    eventCount,
+  };
+}
+
+/* ═══════════════════════════════════════════
+   滑雪全攻略 (Guide Chapters & Helpers)
+   ═══════════════════════════════════════════ */
+
+/**
+ * 依章節 ID 取得攻略篇章。
+ * @param {Array} chapters
+ * @param {string} chapterId
+ * @returns {object|null}
+ */
+export function getGuideChapter(chapters, chapterId) {
+  if (!Array.isArray(chapters) || !chapterId) return null;
+  return chapters.find((c) => c && c.id === chapterId) || null;
+}
+
+/**
+ * 全文搜尋攻略篇章（匹配標題、子標題、簡介或小節內容）。
+ * @param {Array} chapters
+ * @param {string} query
+ * @returns {Array}
+ */
+export function searchGuideChapters(chapters, query) {
+  if (!Array.isArray(chapters) || !query || !query.trim()) return [];
+  const q = query.trim().toLowerCase();
+  return chapters.filter((ch) => {
+    if (!ch) return false;
+    if (ch.title && ch.title.toLowerCase().includes(q)) return true;
+    if (ch.subtitle && ch.subtitle.toLowerCase().includes(q)) return true;
+    if (ch.summary && ch.summary.toLowerCase().includes(q)) return true;
+    if (Array.isArray(ch.sections)) {
+      return ch.sections.some(
+        (sec) =>
+          (sec.title && sec.title.toLowerCase().includes(q)) ||
+          (sec.content && sec.content.toLowerCase().includes(q))
+      );
+    }
+    return false;
+  });
+}
+
+/**
+ * 依標籤篩選攻略章節。
+ * @param {Array} chapters
+ * @param {string} tag
+ * @returns {Array}
+ */
+export function filterGuideByTag(chapters, tag) {
+  const list = Array.isArray(chapters) ? chapters : [];
+  if (!tag || tag === 'all') return list;
+  return list.filter((ch) => Array.isArray(ch.tags) && ch.tags.includes(tag));
+}
+
+/**
+ * 估算長文閱讀時間（中文字約每分鐘 400–500 字）。
+ * @param {number} charCount
+ * @returns {string}
+ */
+export function formatGuideReadingTime(charCount) {
+  const chars = Math.max(0, Number(charCount) || 0);
+  const minutes = Math.max(1, Math.round(chars / 450));
+  return `約 ${minutes} 分鐘閱讀`;
+}
+
+
