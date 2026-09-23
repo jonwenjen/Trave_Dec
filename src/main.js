@@ -21,6 +21,7 @@ import {
   LIVE_DATA_SOURCES,
 } from './data/itinerary.js';
 import {
+  TAB_IDS,
   loadState,
   saveState,
   resetState,

@@ -156,6 +156,18 @@ export function dayIndexOf(day) {
   return value == null ? null : Number(value);
 }
 
+/**
+ * 把任意來源的日序號收斂到 1..dayCount，避免匯入／分享連結帶進不存在的一天。
+ * @param {*} value
+ * @param {number} dayCount - 行程總天數
+ */
+export function clampDayNumber(value, dayCount) {
+  const total = Math.max(1, Math.round(Number(dayCount)) || 1);
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(total, Math.max(1, n));
+}
+
 /** 以日序號區間篩選 */
 export function filterDaysByRange(days, startDay, endDay) {
   return (days || []).filter((d) => {
@@ -504,6 +516,25 @@ export function importTripJSON(jsonString) {
     if (!Number.isFinite(size) || size < 1) throw new Error('partySize 不正確');
   }
   return obj;
+}
+
+/**
+ * 從匯入的行程裡把「我的備註」撿回來。
+ * 匯出檔的 days 已經是套用過編輯的結果，備註寫在事件上；
+ * 分享連結刻意不帶備註，所以只有匯入 JSON 走這條路。
+ * @param {Array} days
+ * @returns {Object<string, {userNote:string}>}
+ */
+export function eventEditsFromDays(days) {
+  const edits = {};
+  for (const day of days || []) {
+    for (const event of (day && day.events) || []) {
+      if (!event || !event.id) continue;
+      if (typeof event.userNote !== 'string' || !event.userNote.trim()) continue;
+      edits[event.id] = { userNote: event.userNote };
+    }
+  }
+  return edits;
 }
 
 /** 分享連結用的輕量狀態（只帶設定，不帶整份行程） */

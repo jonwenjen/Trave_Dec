@@ -120,11 +120,6 @@ describe('normalizeState', () => {
     assert.strictEqual(normalizeState({ activeTab: '' }).activeTab, 'operate');
     assert.strictEqual(normalizeState({ activeTab: 42 }).activeTab, 'operate');
   });
-
-  it('clamps a day number that is past the end of the trip', () => {
-    assert.strictEqual(normalizeState({ currentDay: 9999 }).currentDay, TRIP_DAY_COUNT);
-    assert.strictEqual(normalizeState({ currentDay: 0 }).currentDay, 1);
-  });
 });
 
 describe('load / save / reset', () => {

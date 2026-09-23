@@ -10,6 +10,9 @@ import { DEFAULT_BUFFER_POLICY, normalizeBufferPolicy } from './helpers.js';
 export const STORAGE_KEY = 'trave_dec_state';
 export const STATE_VERSION = 1;
 
+/** 四個主分頁。normalizeState 只接受這幾個值，避免壞掉的分享連結把畫面清空。 */
+export const TAB_IDS = ['operate', 'plan', 'budget', 'fieldkit'];
+
 /**
  * @typedef {Object} AppState
  * @property {number} version
@@ -69,7 +72,7 @@ export function normalizeState(raw, base) {
     state.currentDay = currentDay;
   }
 
-  if (typeof input.activeTab === 'string' && input.activeTab) {
+  if (TAB_IDS.includes(input.activeTab)) {
     state.activeTab = input.activeTab;
   }
 
