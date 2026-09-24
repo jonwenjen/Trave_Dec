@@ -18,6 +18,7 @@ import {
   CONTINGENCY_PLAYBOOK,
   LIVE_DATA_SOURCES,
   FRIEND_ARRIVAL_OPTIONS,
+  TOKYO_LATEST_DEPARTURE,
   DINING_PLACES,
   GUIDE_CHAPTERS,
 } from './data/itinerary.js';
@@ -52,6 +53,7 @@ import {
   buildShareURL,
   decodeShareState,
   computeArrivalOptionSummary,
+  computeTokyoDepartureSummary,
   filterDiningPlaces,
   getDiningRegions,
   computeTripStats,
@@ -554,6 +556,219 @@ function renderArrivalOptions() {
       `;
     })
     .join('');
+
+  renderTokyoDeparture();
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   渲染 4.1：東京觀光組 · 最晚出發方案 (Tokyo Sightseeing Departure)
+   ───────────────────────────────────────────────────────────────── */
+
+function renderTokyoDeparture() {
+  const block = $('tokyo-departure-block');
+  if (!block) return;
+
+  const partyLabel = $('tokyo-party-label');
+  if (partyLabel) partyLabel.textContent = state.partySize;
+
+  const summary = computeTokyoDepartureSummary(TOKYO_LATEST_DEPARTURE, state.partySize, '19:00');
+  if (!summary) return;
+
+  // 1. 渲染關鍵數據膠囊列
+  const metricsStrip = $('tokyo-metrics-strip');
+  if (metricsStrip) {
+    metricsStrip.innerHTML = `
+      <div class="tokyo-metric-pill">
+        <span class="tokyo-metric-pill__label">目標抵達終點</span>
+        <strong class="tokyo-metric-pill__val time">${esc(summary.targetTime)}</strong>
+        <span class="tokyo-metric-pill__sub">${esc(summary.targetDestination)}</span>
+      </div>
+      <div class="tokyo-metric-pill tokyo-metric-pill--highlight">
+        <span class="tokyo-metric-pill__label">最晚東京出發</span>
+        <strong class="tokyo-metric-pill__val time">${esc(summary.latestDepartureTime)}</strong>
+        <span class="tokyo-metric-pill__sub">${esc(summary.departureLocation)}</span>
+      </div>
+      <div class="tokyo-metric-pill">
+        <span class="tokyo-metric-pill__label">觀光時間預算</span>
+        <strong class="tokyo-metric-pill__val">${esc(summary.sightseeingBudget.hours)}</strong>
+        <span class="tokyo-metric-pill__sub">約 ${esc(summary.sightseeingBudgetComputed.formattedDuration)}</span>
+      </div>
+      <div class="tokyo-metric-pill">
+        <span class="tokyo-metric-pill__label">時刻資料狀態</span>
+        <strong class="tokyo-metric-pill__val" style="font-size: 0.95rem; color: var(--color-brand);">規劃估算</strong>
+        <span class="tokyo-metric-pill__sub">前季參考／待官方公布</span>
+      </div>
+    `;
+  }
+
+  // 2. 渲染倒推時間鏈視覺化 (目標 19:00 → 山の駅 → 長野 → 東京)
+  const timelineFlow = $('tokyo-timeline-flow');
+  if (timelineFlow) {
+    const chain = summary.backwardChain || [];
+    const stepsHtml = chain.map((step, idx) => {
+      let icon = '🚌';
+      if (step.mode === 'shinkansen') icon = '🚄';
+      if (step.mode === 'walk') icon = '🚶';
+      if (step.mode === 'taxi') icon = '🚕';
+
+      const isFinal = idx === 0;
+      const isStart = idx === chain.length - 1;
+
+      return `
+        <div class="tokyo-chain-node ${isFinal ? 'tokyo-chain-node--target' : ''} ${isStart ? 'tokyo-chain-node--departure' : ''}">
+          <div class="tokyo-chain-node__badge">
+            <span class="tokyo-chain-node__step-num">Step ${step.step}</span>
+            <span class="tokyo-chain-node__direction">← 倒推鎖定</span>
+          </div>
+          <div class="tokyo-chain-node__time time">${esc(step.targetTime)}</div>
+          <div class="tokyo-chain-node__body">
+            <div class="tokyo-chain-node__title">
+              <span class="tokyo-chain-node__icon">${icon}</span>
+              <strong>${esc(step.to)}</strong>
+            </div>
+            <div class="tokyo-chain-node__sub">起點：${esc(step.from)}</div>
+            <div class="tokyo-chain-node__detail">
+              <span class="num">${esc(step.time)}</span>
+              <span class="tokyo-chain-node__duration">(${step.durationMinutes} 分鐘)</span>
+            </div>
+            <p class="tokyo-chain-node__note">${esc(step.note)}</p>
+          </div>
+        </div>
+      `;
+    }).join(`
+      <div class="tokyo-chain-arrow" aria-hidden="true">
+        <span class="tokyo-chain-arrow__icon">←</span>
+        <span class="tokyo-chain-arrow__text">倒推銜接</span>
+      </div>
+    `);
+
+    timelineFlow.innerHTML = `
+      <div class="tokyo-timeline-chain-wrapper">
+        <div class="tokyo-timeline-summary-bar">
+          <span class="tokyo-timeline-tag">倒推終點：19:00 晚餐會合</span>
+          <span class="tokyo-timeline-arrow-indicator">◀◀ 往前回溯交通腿段 ◀◀</span>
+          <span class="tokyo-timeline-tag tokyo-timeline-tag--anchor">東京站最晚發車：15:44</span>
+        </div>
+        <div class="tokyo-timeline-steps">
+          ${stepsHtml}
+        </div>
+        <div class="tokyo-timeline-caption">
+          <small>💡 觀光時間說明：成田 06:35 著陸，提領行李與 Skyliner 移動約 09:00 抵東京市區，至 15:44 共有約 <strong>6 小時 44 分鐘</strong>（約 6–7 小時）日間觀光行程餘裕。</small>
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. 渲染三選項比較卡片 (最晚緊張 / 建議餘裕 / 計程車備案)
+  const optionsGrid = $('tokyo-options-grid');
+  if (optionsGrid) {
+    optionsGrid.innerHTML = summary.options.map((option) => {
+      const isRecommended = option.id === 'tokyo-opt-recommended';
+      const isTight = option.id === 'tokyo-opt-tight';
+
+      const legsHtml = (option.legs || []).map((leg) => {
+        let legModeIcon = '🚌';
+        if (leg.mode === 'shinkansen' || leg.mode === 'transit') legModeIcon = '🚄';
+        if (leg.mode === 'taxi') legModeIcon = '🚕';
+        if (leg.mode === 'walk') legModeIcon = '🚶';
+
+        const costStr = leg.costTotal
+          ? `¥${leg.costTotal.toLocaleString()} 全團（每人約 ¥${Math.round(leg.costTotal / state.partySize).toLocaleString()}）`
+          : leg.costYen
+          ? `¥${leg.costYen.toLocaleString()} / 人`
+          : '';
+
+        return `
+          <li class="arrival-leg-item">
+            <span class="arrival-leg-item__icon">${legModeIcon}</span>
+            <div>
+              <strong>${esc(leg.name)}</strong>
+              <span class="num" style="margin-left: 6px; font-size: 0.8rem; opacity: 0.85;">(${esc(leg.time || '')})</span>
+              ${costStr ? `<div style="font-size: 0.78rem; color: var(--color-brand);">${costStr}</div>` : ''}
+              ${leg.note ? `<div style="font-size: 0.75rem; color: var(--color-text-subtle); margin-top: 2px;">${esc(leg.note)}</div>` : ''}
+            </div>
+          </li>
+        `;
+      }).join('');
+
+      return `
+        <div class="arrival-card ${isRecommended ? 'arrival-card--featured' : ''} ${isTight ? 'arrival-card--tight' : ''}" id="${option.id}">
+          <div class="arrival-card__top">
+            <span class="arrival-card__badge ${isRecommended ? 'arrival-card__badge--rec' : ''} ${isTight ? 'arrival-card__badge--warn' : ''}">
+              ${esc(option.badge)}
+            </span>
+            <span class="arrival-card__buffer-badge ${option.statusSymbol === '✓' ? 'arrival-card__buffer-badge--met' : 'arrival-card__buffer-badge--warn'}">
+              ${option.statusSymbol} ${esc(option.formattedBuffer)}
+            </span>
+          </div>
+
+          <h3 class="arrival-card__title">${esc(option.name)}</h3>
+
+          <div class="arrival-card__time-info">
+            <span>東京出發：<strong class="time" style="font-size: 1.15rem; color: var(--color-brand);">${esc(option.departureTime)}</strong></span>
+            <span>預估抵達：<strong class="time" style="font-size: 1.15rem;">${esc(option.estimatedArrival)}</strong></span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--color-text-subtle); margin-bottom: 10px;">
+            總車程時間：<span class="num" style="font-weight: 600;">${esc(option.formattedDuration)}</span>
+          </div>
+
+          <div class="arrival-card__cost-row">
+            <div>
+              <span style="font-size: 0.78rem; color: var(--color-text-subtle);">每人交通分攤</span>
+              <div class="arrival-card__cost-pp">${formatCurrency(option.costPerPerson)}</div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.78rem; color: var(--color-text-subtle);">全團 (${state.partySize} 人)</span>
+              <div class="num" style="font-weight: 700;">${formatCurrency(option.costGroup)}</div>
+            </div>
+          </div>
+
+          <p style="font-size: 0.84rem; color: var(--color-text-secondary); margin-bottom: 12px; line-height: 1.45;">
+            ${esc(option.routeSummary)}
+          </p>
+
+          <details style="margin-top: auto; border-top: 1px solid var(--color-border-subtle); padding-top: 10px;">
+            <summary style="font-size: 0.84rem; font-weight: 600; color: var(--color-brand); cursor: pointer;">
+              查看詳細轉乘腿段（${option.legs.length} 段）
+            </summary>
+            <ul class="arrival-card__legs-list">
+              ${legsHtml}
+            </ul>
+            <div style="font-size: 0.8rem; color: var(--color-text-subtle); margin-top: 10px; border-top: 1px dashed var(--color-border-subtle); padding-top: 8px;">
+              <strong style="color: var(--color-status-confirmed);">✓ 優點</strong>：${esc(option.pros)}<br />
+              <strong style="color: var(--color-risk-high);">⚠ 缺點 / 風險</strong>：${esc(option.cons)}
+            </div>
+          </details>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 4. 渲染官方來源說明區
+  const sourcesBox = $('tokyo-sources-box');
+  if (sourcesBox) {
+    const sources = summary.sources || [];
+    const linksHtml = sources.map((s) => `
+      <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer" class="tokyo-source-link">
+        🔗 ${esc(s.name)}
+      </a>
+    `).join(' ');
+
+    sourcesBox.innerHTML = `
+      <div class="tokyo-sources-box__inner">
+        <div class="tokyo-sources-box__header">
+          <span class="tokyo-sources-box__icon">ℹ️</span>
+          <strong>時刻資料依據與官方來源查證提醒</strong>
+        </div>
+        <p class="tokyo-sources-box__note">
+          ${esc(summary.statusNote)}。本功能採用 2026-09 最新之 25–26 冬季官方營運時刻倒推錨點，不假造未公布之即時時刻。冬季信州山區若逢暴風雪或路面結冰，行車時間可能增加 30–60 分鐘，行前務必點擊官方來源複查：
+        </p>
+        <div class="tokyo-sources-box__links">
+          ${linksHtml}
+        </div>
+      </div>
+    `;
+  }
 }
 
 /* ═════════════════════════════════════════════════════════════════

@@ -938,6 +938,249 @@ export function computeArrivalOptionSummary(option, partySize = 5, targetTime = 
 }
 
 /* ═══════════════════════════════════════════
+   東京觀光組 · 最晚出發方案倒推計算
+   ═══════════════════════════════════════════ */
+
+/**
+ * 由目標抵達時刻倒推各腿段所需的最晚出發時間與緩衝。
+ * 腿段依正向旅遊順序傳入（從起點至終點），演算法自終點 (targetTime) 倒推：
+ * - 末段抵達為 targetTime
+ * - 每段出發 = 抵達 - 該段耗時
+ * - 前段抵達 = 次段出發 - 站內轉乘/銜接時間
+ *
+ * @param {string} targetTime - 目標抵達時刻，如 "19:00"
+ * @param {Array<object>} legs - 正向腿段清單，各含 durationMinutes, transferMinutesAfter 等
+ * @param {{
+ *   actualArrivalTime?: string,
+ *   minSafeBuffer?: number,
+ *   tightThreshold?: number
+ * }} [options={}] - 選項設定
+ * @returns {{
+ *   targetTime: string,
+ *   targetMinutes: number|null,
+ *   latestDepartureTime: string|null,
+ *   latestDepartureMinutes: number|null,
+ *   totalDurationMinutes: number,
+ *   formattedDuration: string,
+ *   legs: Array<object>,
+ *   bufferMinutes: number|null,
+ *   isMet: boolean,
+ *   statusSymbol: '✓'|'⚠',
+ *   formattedBuffer: string
+ * }}
+ */
+export function backtrackDepartureSchedule(targetTime, legs, options = {}) {
+  const tgtM = timeToMinutes(targetTime);
+  const legList = Array.isArray(legs) ? legs : [];
+  const minSafe = options.minSafeBuffer != null ? options.minSafeBuffer : 0;
+
+  if (tgtM == null || legList.length === 0) {
+    return {
+      targetTime: String(targetTime || ''),
+      targetMinutes: null,
+      latestDepartureTime: null,
+      latestDepartureMinutes: null,
+      totalDurationMinutes: 0,
+      formattedDuration: '0 分鐘',
+      legs: [],
+      bufferMinutes: null,
+      isMet: false,
+      statusSymbol: '⚠',
+      formattedBuffer: '時間未定',
+    };
+  }
+
+  // 複製 legs，從末端往回推算
+  const enrichedLegs = legList.map((leg) => ({ ...leg }));
+  let currentArrM = tgtM;
+
+  for (let i = enrichedLegs.length - 1; i >= 0; i--) {
+    const leg = enrichedLegs[i];
+    const duration = Math.max(0, Math.round(Number(leg.durationMinutes) || 0));
+
+    // 如果不是最後一段，需考慮銜接到下一段的轉乘時間 (transferMinutesAfter)
+    if (i < enrichedLegs.length - 1) {
+      const transfer = Math.max(0, Math.round(Number(leg.transferMinutesAfter || 0)));
+      currentArrM -= transfer;
+    }
+
+    const depM = currentArrM - duration;
+    leg.calculatedArrival = minutesToTime(currentArrM);
+    leg.calculatedDeparture = minutesToTime(depM);
+    leg.durationMinutes = duration;
+
+    currentArrM = depM;
+  }
+
+  const latestDepM = currentArrM;
+  const latestDepartureTime = minutesToTime(latestDepM);
+  const totalDurationMinutes = tgtM - latestDepM;
+  const durH = Math.floor(totalDurationMinutes / 60);
+  const durM = totalDurationMinutes % 60;
+  const formattedDuration = durH > 0 ? `${durH} 小時 ${durM} 分` : `${durM} 分鐘`;
+
+  // 計算緩衝
+  let bufferMinutes = 0;
+  let isMet = true;
+  let statusSymbol = '✓';
+  let formattedBuffer = '+0 分鐘';
+
+  if (options.actualArrivalTime) {
+    const actualArrM = timeToMinutes(options.actualArrivalTime);
+    if (actualArrM != null) {
+      bufferMinutes = tgtM - actualArrM;
+      isMet = bufferMinutes >= 0;
+      if (!isMet) {
+        statusSymbol = '⚠';
+        const overdue = Math.abs(bufferMinutes);
+        formattedBuffer = `-${overdue} 分鐘（超時 ${Math.floor(overdue / 60) > 0 ? `${Math.floor(overdue / 60)} 小時 ` : ''}${overdue % 60} 分）`;
+      } else if (bufferMinutes < minSafe) {
+        statusSymbol = '⚠';
+        formattedBuffer = `+${bufferMinutes} 分鐘（緊張，緩衝未滿 ${minSafe} 分）`;
+      } else {
+        statusSymbol = '✓';
+        const hours = Math.floor(bufferMinutes / 60);
+        const mins = bufferMinutes % 60;
+        formattedBuffer = `+${bufferMinutes} 分鐘（餘裕 ${hours > 0 ? `${hours} 小時 ` : ''}${mins} 分）`;
+      }
+    }
+  } else {
+    if (minSafe > 0) {
+      statusSymbol = '⚠';
+      formattedBuffer = '+0 分鐘（緩衝 0–5 分，極緊張）';
+    }
+  }
+
+  return {
+    targetTime,
+    targetMinutes: tgtM,
+    latestDepartureTime,
+    latestDepartureMinutes: latestDepM,
+    totalDurationMinutes,
+    formattedDuration,
+    legs: enrichedLegs,
+    bufferMinutes,
+    isMet,
+    statusSymbol,
+    formattedBuffer,
+  };
+}
+
+/**
+ * 計算東京觀光時間預算（落地 → 市區至出發）
+ *
+ * @param {string} [landingTime='06:35'] - 成田著陸時間
+ * @param {string} [departureTime='15:44'] - 最晚東京出發時間
+ * @param {number} [transitToCityMinutes=145] - 機場入境與抵達市區耗時（入境 80m + Skyliner 44m + 轉乘 21m ≈ 145m，約 09:00 抵東京）
+ * @returns {{
+ *   landingTime: string,
+ *   cityArrivalTime: string,
+ *   departureTime: string,
+ *   budgetMinutes: number,
+ *   hoursFormatted: string,
+ *   formattedDuration: string
+ * }}
+ */
+export function calculateSightseeingBudget(landingTime = '06:35', departureTime = '15:44', transitToCityMinutes = 145) {
+  const landM = timeToMinutes(landingTime);
+  const depM = timeToMinutes(departureTime);
+
+  if (landM == null || depM == null) {
+    return {
+      landingTime: String(landingTime || ''),
+      cityArrivalTime: '00:00',
+      departureTime: String(departureTime || ''),
+      budgetMinutes: 0,
+      hoursFormatted: '0 小時',
+      formattedDuration: '0 分鐘',
+    };
+  }
+
+  const cityArrivalM = landM + Math.max(0, Math.round(Number(transitToCityMinutes) || 0));
+  const budgetMinutes = Math.max(0, depM - cityArrivalM);
+
+  const cityArrivalTime = minutesToTime(cityArrivalM);
+  const hours = Math.floor(budgetMinutes / 60);
+  const mins = budgetMinutes % 60;
+  const formattedDuration = hours > 0 ? `${hours} 小時 ${mins} 分` : `${mins} 分鐘`;
+
+  let hoursFormatted = '0 小時';
+  if (budgetMinutes >= 330 && budgetMinutes <= 450) {
+    hoursFormatted = '約 6–7 小時';
+  } else if (hours > 0) {
+    hoursFormatted = `約 ${hours} 小時`;
+  }
+
+  return {
+    landingTime,
+    cityArrivalTime,
+    departureTime,
+    budgetMinutes,
+    hoursFormatted,
+    formattedDuration,
+  };
+}
+
+/**
+ * 組合東京觀光最晚出發方案的總覽與選項費用分攤。
+ *
+ * @param {object} departureData - TOKYO_LATEST_DEPARTURE 資料物件
+ * @param {number} [partySize=5] - 團員人數
+ * @param {string} [targetTime='19:00'] - 目標時刻
+ * @returns {object}
+ */
+export function computeTokyoDepartureSummary(departureData, partySize = 5, targetTime = '19:00') {
+  if (!departureData) return null;
+  const tgt = targetTime || departureData.targetTime || '19:00';
+  const size = Math.max(1, Math.round(Number(partySize) || 1));
+
+  const options = (departureData.options || []).map((opt) => {
+    const costSummary = computeArrivalOptionCost(opt, size);
+    const bufferSummary = calculateArrivalBuffer(opt.estimatedArrival, tgt);
+
+    let durationMinutes = opt.durationMinutes;
+    if (durationMinutes == null && opt.departureTime && opt.estimatedArrival) {
+      const depM = timeToMinutes(opt.departureTime);
+      const arrM = timeToMinutes(opt.estimatedArrival);
+      if (depM != null && arrM != null) durationMinutes = arrM - depM;
+    }
+    durationMinutes = durationMinutes || 0;
+    const durH = Math.floor(durationMinutes / 60);
+    const durM = durationMinutes % 60;
+    const formattedDuration = durH > 0 ? `${durH} 小時 ${durM} 分` : `${durM} 分鐘`;
+
+    return {
+      ...opt,
+      partySize: size,
+      costPerPerson: costSummary.perPerson,
+      costGroup: costSummary.group,
+      legCosts: costSummary.legCosts,
+      bufferMinutes: opt.bufferMinutes != null ? opt.bufferMinutes : bufferSummary.bufferMinutes,
+      formattedBuffer: opt.formattedBuffer || bufferSummary.formattedBuffer,
+      isMet: opt.isMet != null ? opt.isMet : bufferSummary.isMet,
+      statusSymbol: opt.statusSymbol || bufferSummary.statusSymbol,
+      targetTime: tgt,
+      durationMinutes,
+      formattedDuration,
+    };
+  });
+
+  const budget = calculateSightseeingBudget(
+    departureData.landingTime || '06:35',
+    departureData.latestDepartureTime || '15:44',
+    145
+  );
+
+  return {
+    ...departureData,
+    partySize: size,
+    targetTime: tgt,
+    options,
+    sightseeingBudgetComputed: budget,
+  };
+}
+
+/* ═══════════════════════════════════════════
    吃喝篩選 (Dining & Drinks)
    ═══════════════════════════════════════════ */
 

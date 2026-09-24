@@ -48,6 +48,9 @@ import {
   calculateArrivalBuffer,
   computeArrivalOptionCost,
   computeArrivalOptionSummary,
+  backtrackDepartureSchedule,
+  calculateSightseeingBudget,
+  computeTokyoDepartureSummary,
   filterDiningPlaces,
   getDiningRegions,
   computeTripStats,
@@ -61,6 +64,7 @@ import {
   TRIP_META,
   SAMPLE_BUDGET,
   FRIEND_ARRIVAL_OPTIONS,
+  TOKYO_LATEST_DEPARTURE,
   DINING_PLACES,
   GUIDE_CHAPTERS,
 } from '../src/data/itinerary.js';
@@ -773,6 +777,190 @@ describe('朋友抵達方案 (12/15 NRT T3 → 2307)', () => {
       const taxiLeg = planC.legs.find((leg) => leg.mode === 'taxi' || leg.costTotal != null);
       assert.ok(taxiLeg, 'Plan C 應有計程車腿段');
       assert.ok(taxiLeg.costTotal > 0, '計程車腿段應有 costTotal 全團費用');
+    });
+  });
+});
+
+describe('東京觀光組 · 最晚出發方案 (12/15 東京 → 2307)', () => {
+  describe('backtrackDepartureSchedule', () => {
+    const standardLegs = [
+      {
+        id: 'shinkansen',
+        name: '北陸新幹線（東京 → 長野）',
+        from: '東京',
+        to: '長野',
+        durationMinutes: 80,
+        transferMinutesAfter: 21,
+      },
+      {
+        id: 'nagaden-bus',
+        name: '長電急行巴士（長野站東口 → 山の駅）',
+        from: '長野駅東口',
+        to: '志賀高原山の駅',
+        durationMinutes: 70,
+        transferMinutesAfter: 0,
+      },
+      {
+        id: 'local-shuttle',
+        name: '山內接駁／路線巴士（山の駅 → ほたる温泉）',
+        from: '志賀高原山の駅',
+        to: 'ほたる温泉（Hotel & Onsen 2307）',
+        durationMinutes: 25,
+      },
+    ];
+
+    it('correctly backtracks each leg and yields latest departure ≈ 15:44 from 19:00 target', () => {
+      const schedule = backtrackDepartureSchedule('19:00', standardLegs);
+      assert.strictEqual(schedule.latestDepartureTime, '15:44');
+      assert.strictEqual(schedule.targetTime, '19:00');
+      assert.strictEqual(schedule.totalDurationMinutes, 196);
+      assert.strictEqual(schedule.legs.length, 3);
+
+      // 檢查各腿段倒推時間
+      // Leg 1: 15:44 出發，17:04 到長野
+      assert.strictEqual(schedule.legs[0].calculatedDeparture, '15:44');
+      assert.strictEqual(schedule.legs[0].calculatedArrival, '17:04');
+      // Leg 2: 17:25 出發（轉乘 21 分後），18:35 到山の駅
+      assert.strictEqual(schedule.legs[1].calculatedDeparture, '17:25');
+      assert.strictEqual(schedule.legs[1].calculatedArrival, '18:35');
+      // Leg 3: 18:35 出發，19:00 到ほたる温泉
+      assert.strictEqual(schedule.legs[2].calculatedDeparture, '18:35');
+      assert.strictEqual(schedule.legs[2].calculatedArrival, '19:00');
+    });
+
+    it('calculates positive buffer and checkmark symbol for earlier arrival (e.g. 18:10)', () => {
+      const schedule = backtrackDepartureSchedule('19:00', standardLegs, { actualArrivalTime: '18:10' });
+      assert.strictEqual(schedule.bufferMinutes, 50);
+      assert.strictEqual(schedule.isMet, true);
+      assert.strictEqual(schedule.statusSymbol, '✓');
+      assert.ok(schedule.formattedBuffer.includes('+50'));
+    });
+
+    it('flags tight buffer (< 15 min) with warning symbol ⚠', () => {
+      const schedule = backtrackDepartureSchedule('19:00', standardLegs, {
+        actualArrivalTime: '19:00',
+        minSafeBuffer: 15,
+      });
+      assert.strictEqual(schedule.bufferMinutes, 0);
+      assert.strictEqual(schedule.isMet, true);
+      assert.strictEqual(schedule.statusSymbol, '⚠');
+      assert.ok(schedule.formattedBuffer.includes('緊張') || schedule.formattedBuffer.includes('0'));
+    });
+
+    it('flags late arrival (> 19:00) with warning symbol ⚠ and overdue text', () => {
+      const schedule = backtrackDepartureSchedule('19:00', standardLegs, { actualArrivalTime: '19:20' });
+      assert.strictEqual(schedule.bufferMinutes, -20);
+      assert.strictEqual(schedule.isMet, false);
+      assert.strictEqual(schedule.statusSymbol, '⚠');
+      assert.ok(schedule.formattedBuffer.includes('超時') || schedule.formattedBuffer.includes('-20'));
+    });
+
+    it('handles missing or malformed inputs gracefully without throwing', () => {
+      const invalid = backtrackDepartureSchedule(null, []);
+      assert.strictEqual(invalid.latestDepartureTime, null);
+      assert.strictEqual(invalid.isMet, false);
+      assert.strictEqual(invalid.statusSymbol, '⚠');
+    });
+  });
+
+  describe('calculateSightseeingBudget', () => {
+    it('calculates ~6 to 7 hours budget from 06:35 landing to 15:44 departure', () => {
+      const budget = calculateSightseeingBudget('06:35', '15:44', 145);
+      assert.strictEqual(budget.cityArrivalTime, '09:00');
+      assert.strictEqual(budget.budgetMinutes, 404);
+      assert.strictEqual(budget.hoursFormatted, '約 6–7 小時');
+      assert.ok(budget.formattedDuration.includes('6 小時 44 分'));
+    });
+
+    it('handles negative or invalid budget times gracefully', () => {
+      const budget = calculateSightseeingBudget('16:00', '15:00', 120);
+      assert.strictEqual(budget.budgetMinutes, 0);
+      assert.strictEqual(budget.hoursFormatted, '0 小時');
+    });
+  });
+
+  describe('computeTokyoDepartureSummary', () => {
+    it('summarizes Tokyo departure options with costs scaling by party size', () => {
+      const summary5 = computeTokyoDepartureSummary(TOKYO_LATEST_DEPARTURE, 5);
+      assert.strictEqual(summary5.partySize, 5);
+      assert.strictEqual(summary5.options.length, 3);
+      assert.strictEqual(summary5.latestDepartureTime, '15:44');
+
+      // 檢查計程車費用分攤
+      const taxiOpt = summary5.options.find((o) => o.id === 'tokyo-opt-taxi');
+      assert.ok(taxiOpt);
+      assert.ok(taxiOpt.costPerPerson > 0);
+      assert.ok(taxiOpt.costGroup > 0);
+
+      // 當人數為 3 時，計程車均攤變高
+      const summary3 = computeTokyoDepartureSummary(TOKYO_LATEST_DEPARTURE, 3);
+      const taxiOpt3 = summary3.options.find((o) => o.id === 'tokyo-opt-taxi');
+      assert.ok(taxiOpt3.costPerPerson > taxiOpt.costPerPerson);
+    });
+  });
+
+  describe('TOKYO_LATEST_DEPARTURE 資料完整性', () => {
+    it('has required top-level fields: targetTime 19:00, latest departure ≈ 15:44, and budget', () => {
+      assert.strictEqual(TOKYO_LATEST_DEPARTURE.targetTime, '19:00');
+      assert.strictEqual(TOKYO_LATEST_DEPARTURE.latestDepartureTime, '15:44');
+      assert.ok(TOKYO_LATEST_DEPARTURE.sightseeingBudget.hours.includes('6–7 小時'));
+      assert.ok(TOKYO_LATEST_DEPARTURE.statusNote.includes('規劃估算／前季參考'));
+    });
+
+    it('contains backward chain with anchor points ending at 19:00', () => {
+      assert.ok(Array.isArray(TOKYO_LATEST_DEPARTURE.backwardChain));
+      assert.ok(TOKYO_LATEST_DEPARTURE.backwardChain.length >= 3);
+      const steps = TOKYO_LATEST_DEPARTURE.backwardChain;
+      assert.strictEqual(steps[0].targetTime, '19:00');
+      assert.ok(steps[0].to.includes('2307') || steps[0].to.includes('ほたる温泉'));
+    });
+
+    it('contains exactly 3 options: 最晚緊張 / 建議餘裕 / 計程車備案', () => {
+      assert.strictEqual(TOKYO_LATEST_DEPARTURE.options.length, 3);
+      const ids = TOKYO_LATEST_DEPARTURE.options.map((o) => o.id);
+      assert.deepStrictEqual(ids, ['tokyo-opt-tight', 'tokyo-opt-recommended', 'tokyo-opt-taxi']);
+    });
+
+    it('each option has legs chain, buffer against 19:00, checkmark/warning symbol, and official sources', () => {
+      for (const opt of TOKYO_LATEST_DEPARTURE.options) {
+        assert.ok(opt.name, `缺少名稱: ${opt.id}`);
+        assert.ok(opt.estimatedArrival, `缺少抵達時間: ${opt.id}`);
+        assert.ok(Array.isArray(opt.legs) && opt.legs.length > 0, `缺少腿段: ${opt.id}`);
+        assert.ok(['✓', '⚠'].includes(opt.statusSymbol), `缺少或符號不合法: ${opt.id}`);
+        assert.ok(opt.sourceUrl && opt.sourceUrl.startsWith('https://'), `缺少合法 sourceUrl: ${opt.id}`);
+        assert.ok(opt.statusNote && opt.statusNote.includes('規劃估算'), `缺少估算說明: ${opt.id}`);
+      }
+    });
+
+    it('tight option has warning symbol ⚠ and buffer <= 5 min', () => {
+      const tight = TOKYO_LATEST_DEPARTURE.options.find((o) => o.id === 'tokyo-opt-tight');
+      assert.strictEqual(tight.statusSymbol, '⚠');
+      assert.ok(tight.bufferMinutes <= 5);
+      assert.strictEqual(tight.departureTime, '15:44');
+    });
+
+    it('recommended option has checkmark ✓ and comfortable buffer (50 min)', () => {
+      const rec = TOKYO_LATEST_DEPARTURE.options.find((o) => o.id === 'tokyo-opt-recommended');
+      assert.strictEqual(rec.statusSymbol, '✓');
+      assert.strictEqual(rec.bufferMinutes, 50);
+      assert.strictEqual(rec.departureTime, '14:44');
+      assert.strictEqual(rec.estimatedArrival, '18:10');
+    });
+
+    it('taxi option has warning symbol ⚠ and supports vehicle cost sharing', () => {
+      const taxi = TOKYO_LATEST_DEPARTURE.options.find((o) => o.id === 'tokyo-opt-taxi');
+      assert.strictEqual(taxi.statusSymbol, '⚠');
+      const taxiLeg = taxi.legs.find((leg) => leg.mode === 'taxi' || leg.costTotal != null);
+      assert.ok(taxiLeg, '計程車備案應有計程車腿段');
+      assert.ok(taxiLeg.costTotal > 0, '計程車腿段應有 costTotal 全團費用');
+    });
+
+    it('includes official links to Nagaden winter bus and Shiga Kogen official pages', () => {
+      const sources = TOKYO_LATEST_DEPARTURE.sources;
+      assert.ok(Array.isArray(sources) && sources.length >= 2);
+      const urls = sources.map((s) => s.url);
+      assert.ok(urls.some((u) => u.includes('nagadenbus.co.jp')));
+      assert.ok(urls.some((u) => u.includes('shigakogen.gr.jp')));
     });
   });
 });
