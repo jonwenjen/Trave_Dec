@@ -33,6 +33,7 @@
           <a href="#itinerary" class="top-nav__link" data-nav-target="itinerary">行程</a>
           <a href="#arrival" class="top-nav__link" data-nav-target="arrival">抵達方案</a>
           <a href="#dining" class="top-nav__link" data-nav-target="dining">吃喝</a>
+          <a href="#krabi" class="top-nav__link" data-nav-target="krabi">甲米五案</a>
           <a href="#guide" class="top-nav__link" data-nav-target="guide">攻略</a>
           <a href="#tools" class="top-nav__link" data-nav-target="tools">隨身工具</a>
         </nav>
@@ -366,6 +367,102 @@
           <!-- 攻略篇章容器 -->
           <div class="guide-articles-flow" id="guide-articles">
             <!-- 由 JS 動態生成 6 大篇章 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────── 甲米 2027/05 跳島浮潛・五方案比較 ────────── -->
+      <section class="section section--krabi" id="krabi" aria-labelledby="krabi-heading">
+        <div class="section-container">
+          <div class="section-header section-header--editorial">
+            <span class="section-eyebrow">Krabi · May 2027 · 7 Days</span>
+            <h2 class="section-title" id="krabi-heading">泰國甲米跳島浮潛・五種方案比較</h2>
+            <p class="section-desc">
+              高雄出發、七日、五種走法。從「5 天全在海上」到「雨季保險型」各有代價，
+              這一區把五案並排摊開，讓你依浮潛強度、風險容忍度與預算做決定。
+            </p>
+          </div>
+
+          <!-- 資料時效警示（誠實聲明） -->
+          <div class="krabi-freshness" role="note">
+            <p class="krabi-freshness__text" id="krabi-freshness-note"></p>
+          </div>
+
+          <!-- 三個決定性前提 -->
+          <div class="krabi-facts" id="krabi-key-facts" aria-label="三個決定性前提"></div>
+
+          <!-- 情境推薦 -->
+          <div class="krabi-reco" id="krabi-reco" aria-label="情境推薦"></div>
+
+          <!-- 費用試算 -->
+          <div class="krabi-calc" id="krabi-calc">
+            <div class="krabi-calc__header">
+              <h3 class="krabi-subtitle">費用試算</h3>
+              <p class="krabi-calc__note" id="krabi-calc-note"></p>
+            </div>
+            <div class="krabi-calc__controls">
+              <div class="krabi-stepper">
+                <button type="button" class="krabi-stepper__btn" id="krabi-people-minus" aria-label="減少人數">−</button>
+                <label class="visually-hidden" for="krabi-people-input">出行人數</label>
+                <input type="number" id="krabi-people-input" class="krabi-stepper__input" min="1" max="20" step="1" value="4" />
+                <button type="button" class="krabi-stepper__btn" id="krabi-people-plus" aria-label="增加人數">＋</button>
+              </div>
+              <label class="krabi-toggle">
+                <input type="checkbox" id="krabi-include-flight" />
+                <span>含機票（KHH→BKK→KBV 前季參考 TWD 10,700–14,600）</span>
+              </label>
+            </div>
+            <div class="krabi-calc__grid" id="krabi-cost-grid"></div>
+            <p class="krabi-calc__disclaimer" id="krabi-rate-note"></p>
+          </div>
+
+          <!-- 五方案卡 -->
+          <div class="krabi-plans" id="krabi-plan-list" aria-label="五種方案"></div>
+
+          <!-- 比較表 -->
+          <div class="krabi-compare">
+            <div class="krabi-compare__header">
+              <h3 class="krabi-subtitle">並排比較</h3>
+              <div class="krabi-compare__axis-tabs" id="krabi-axis-tabs" role="tablist" aria-label="切換比較軸"></div>
+            </div>
+            <div class="krabi-compare__body" id="krabi-compare-body"></div>
+            <p class="krabi-compare__legend">
+              <span class="krabi-legend__item"><span class="krabi-legend__dot krabi-legend__dot--best" aria-hidden="true"></span>該軸最佳</span>
+              <span class="krabi-legend__item">深色模式沿用站內主題切換</span>
+            </p>
+          </div>
+
+          <!-- 雨季應變對照 -->
+          <div class="krabi-block">
+            <h3 class="krabi-subtitle">季風過渡期應變對照</h3>
+            <div class="krabi-contingency" id="krabi-contingency"></div>
+          </div>
+
+          <!-- 公園費 -->
+          <div class="krabi-block">
+            <h3 class="krabi-subtitle">國家公園入場費（成人・2026 前季參考）</h3>
+            <div class="krabi-fees" id="krabi-fees"></div>
+          </div>
+
+          <!-- 待查證清單 -->
+          <div class="krabi-block">
+            <div class="krabi-block__header">
+              <h3 class="krabi-subtitle">訂票前待查證清單</h3>
+              <p class="krabi-block__note" id="krabi-checklist-progress"></p>
+            </div>
+            <ul class="krabi-checklist" id="krabi-checklist"></ul>
+            <div class="krabi-block__footer">
+              <button type="button" class="btn btn--ghost btn--sm" id="krabi-checklist-reset">重設勾選</button>
+            </div>
+          </div>
+
+          <!-- 來源 -->
+          <div class="krabi-block">
+            <h3 class="krabi-subtitle">主要來源</h3>
+            <ul class="krabi-sources" id="krabi-sources"></ul>
+            <p class="krabi-block__note">
+              本區塊為獨立規劃（2027/05 甲米跳島），與上方 2026/12 志賀高原滑雪行程為不同旅程，數據互不參照。
+            </p>
           </div>
         </div>
       </section>

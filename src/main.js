@@ -59,6 +59,7 @@ import {
   computeTripStats,
   formatGuideReadingTime,
 } from './helpers.js';
+import { createKrabiSection } from './krabi-ui.js';
 
 /* ═════════════════════════════════════════════════════════════════
    狀態 (State)
@@ -75,6 +76,13 @@ let fieldSearchQuery = '';
 let activePhraseCat = PHRASE_CATEGORIES[0].id;
 let activeGuideChapterId = GUIDE_CHAPTERS[0].id;
 let lastFocusedBeforeDialog = null;
+
+/** 甲米 2027/05 五方案比較區塊（與滑雪行程完全獨立） */
+const krabiSection = createKrabiSection({
+  getEl: (id) => document.getElementById(id),
+  esc,
+  toast: (message) => toast(message),
+});
 
 const RISK_LABELS = {
   high: { label: '高風險', hint: '緩衝偏緊，錯過無替代班次' },
@@ -1539,6 +1547,7 @@ function renderAll() {
   renderDiningList();
   renderGuide();
   renderFieldKit();
+  krabiSection.render();
 }
 
 function init() {
@@ -1554,6 +1563,7 @@ function init() {
   initDiningRegions();
   renderAll();
   wireEvents();
+  krabiSection.wire();
 
   // 註冊 Service Worker (離線支援)
   if ('serviceWorker' in navigator && import.meta.env && import.meta.env.PROD) {

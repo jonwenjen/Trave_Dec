@@ -2901,3 +2901,869 @@ img, svg {
 .back-to-top-btn:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ═════════════════════════════════════════════════════════════════
+   甲米 2027/05 跳島浮潛・五方案比較 (Krabi)
+   ═════════════════════════════════════════════════════════════════ */
+
+.section--krabi {
+  background: var(--color-bg-paper);
+}
+
+.krabi-subtitle {
+  font-family: var(--font-serif);
+  font-size: 1.28rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+  letter-spacing: 0.01em;
+}
+
+.krabi-block {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.krabi-block__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.krabi-block__note {
+  font-size: 0.82rem;
+  color: var(--color-text-subtle);
+  margin: 10px 0 0;
+  line-height: 1.6;
+}
+
+.krabi-block__footer {
+  margin-top: 14px;
+}
+
+/* 資料時效警示 */
+.krabi-freshness {
+  margin: 22px 0 24px;
+  padding: 14px 18px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-brand-border);
+  background: var(--color-brand-light);
+}
+
+.krabi-freshness__text {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.krabi-freshness__text::before {
+  content: '⏱';
+  margin-right: 8px;
+}
+
+/* 三個決定性前提 */
+.krabi-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.krabi-fact {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+  border-left: 4px solid var(--color-risk-med);
+}
+
+.krabi-fact--critical {
+  border-left-color: var(--color-brand);
+  background: var(--color-pine);
+  color: var(--color-pine-text);
+}
+
+.krabi-fact--critical .krabi-fact__label,
+.krabi-fact--critical .krabi-fact__value {
+  color: var(--color-pine-text);
+}
+
+.krabi-fact--critical .krabi-fact__detail {
+  color: var(--color-pine-text-sub);
+}
+
+.krabi-fact__label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-bottom: 8px;
+}
+
+.krabi-fact__value {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.krabi-fact__detail {
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* 情境推薦 */
+.krabi-reco {
+  margin-top: 22px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-pine);
+  color: var(--color-pine-text);
+  box-shadow: var(--shadow-pine);
+}
+
+.krabi-reco__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-pine-text-sub);
+  margin: 0 0 10px;
+}
+
+.krabi-reco__primary {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--color-pine-text);
+}
+
+.krabi-reco__reason {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-pine-text-sub);
+  margin: 0 0 14px;
+}
+
+.krabi-reco__alts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.84rem;
+  color: var(--color-pine-text-sub);
+}
+
+.krabi-reco__alt {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-pine-text);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 費用試算 */
+.krabi-calc {
+  margin-top: 30px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.krabi-calc__note {
+  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.krabi-calc__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.krabi-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+}
+
+.krabi-stepper__btn {
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.krabi-stepper__btn:hover {
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+}
+
+.krabi-stepper__input {
+  width: 56px;
+  min-height: 44px;
+  border: 0;
+  border-left: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  background: transparent;
+  text-align: center;
+  font-family: var(--font-num);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.krabi-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 0.86rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.krabi-toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.krabi-calc__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.krabi-cost {
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-paper);
+  border: 1px solid var(--color-border-subtle);
+  text-align: center;
+}
+
+.krabi-cost__tag {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  line-height: 1;
+}
+
+.krabi-cost__name {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--color-text-secondary);
+  margin: 4px 0 8px;
+}
+
+.krabi-cost__value {
+  font-family: var(--font-num);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.krabi-cost__group {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-subtle);
+  margin-top: 6px;
+}
+
+.krabi-calc__disclaimer {
+  margin: 16px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--color-text-subtle);
+}
+
+/* 五方案卡 */
+.krabi-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.krabi-plan {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.krabi-plan:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.krabi-plan--primary {
+  border-color: var(--color-brand);
+  border-width: 2px;
+}
+
+.krabi-plan__head {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.krabi-plan__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.krabi-plan__tag {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-brand);
+}
+
+.krabi-plan__risk {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.krabi-plan__risk--good {
+  background: rgba(42, 126, 88, 0.12);
+  color: var(--color-status-confirmed);
+}
+
+.krabi-plan__risk--warn {
+  background: rgba(184, 115, 29, 0.14);
+  color: var(--color-status-estimate);
+}
+
+.krabi-plan__risk--danger {
+  background: rgba(217, 56, 41, 0.12);
+  color: var(--color-risk-high);
+}
+
+.krabi-plan__snorkel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-pine);
+  color: var(--color-pine-text);
+  letter-spacing: 0.04em;
+}
+
+.krabi-plan__name {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.krabi-plan__positioning {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  margin: 0 0 14px;
+}
+
+.krabi-plan__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 14px;
+  padding: 0 20px 16px;
+}
+
+.krabi-plan__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.krabi-plan__stat-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.krabi-plan__stat-value {
+  font-family: var(--font-num);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.krabi-plan__highlight {
+  margin: 0 20px 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-btn);
+  background: var(--color-brand-light);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--color-text-primary);
+}
+
+.krabi-plan__suits {
+  margin: 0 20px 16px;
+  font-size: 0.78rem;
+  color: var(--color-text-subtle);
+  line-height: 1.6;
+}
+
+.krabi-plan__toggle {
+  margin: auto 20px 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-btn);
+  background: var(--color-surface-elevated);
+  color: var(--color-brand);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.krabi-plan__toggle:hover {
+  background: var(--color-brand-light);
+}
+
+.krabi-plan__days {
+  padding: 0 20px;
+  display: none;
+}
+
+.krabi-plan__days.is-open {
+  display: block;
+}
+
+.krabi-plan__day {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.krabi-plan__day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.krabi-plan__day-no {
+  font-family: var(--font-num);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  flex-shrink: 0;
+}
+
+.krabi-plan__day-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.45;
+}
+
+.krabi-plan__day-detail {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.krabi-plan__day-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-subtle);
+}
+
+.krabi-plan__chip {
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-paper);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.krabi-plan__chip--buffer {
+  background: rgba(184, 115, 29, 0.12);
+  color: var(--color-status-estimate);
+  font-weight: 600;
+}
+
+.krabi-plan__chip--sea {
+  background: var(--color-pine);
+  color: var(--color-pine-text);
+}
+
+.krabi-plan__foot {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.74rem;
+}
+
+.krabi-plan__source {
+  color: var(--color-brand);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-brand-border);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.krabi-plan__source:hover {
+  border-bottom-color: var(--color-brand);
+}
+
+/* 比較表 */
+.krabi-compare {
+  margin-top: 34px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.krabi-compare__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.krabi-compare__axis-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.krabi-axis-tab {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.krabi-axis-tab:hover {
+  border-color: var(--color-brand-border);
+  color: var(--color-brand);
+}
+
+.krabi-axis-tab[aria-selected="true"] {
+  background: var(--color-pine);
+  border-color: var(--color-pine);
+  color: var(--color-pine-text);
+}
+
+.krabi-compare__body {
+  overflow-x: auto;
+}
+
+.krabi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  min-width: 520px;
+}
+
+.krabi-table th,
+.krabi-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.krabi-table thead th {
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.krabi-table tbody tr:last-child th,
+.krabi-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.krabi-table__axis {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.krabi-table__hint {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+}
+
+.krabi-table__val {
+  font-family: var(--font-num);
+  color: var(--color-text-primary);
+}
+
+.krabi-table__val--best {
+  color: var(--color-brand);
+  font-weight: 700;
+  position: relative;
+}
+
+.krabi-table__val--best::after {
+  content: '★';
+  margin-left: 5px;
+  font-size: 0.7rem;
+}
+
+.krabi-compare__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 14px 0 0;
+  font-size: 0.74rem;
+  color: var(--color-text-subtle);
+}
+
+.krabi-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.krabi-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-circle);
+  background: var(--color-border);
+}
+
+.krabi-legend__dot--best {
+  background: var(--color-brand);
+}
+
+/* 應變對照 */
+.krabi-contingency {
+  display: grid;
+  gap: 10px;
+}
+
+.krabi-cont-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) 1fr;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-btn);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.krabi-cont-row__situation {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  line-height: 1.5;
+}
+
+.krabi-cont-row__action {
+  font-size: 0.84rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* 公園費 */
+.krabi-fees {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.krabi-fee {
+  padding: 16px;
+  border-radius: var(--radius-btn);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.krabi-fee__place {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+.krabi-fee__amount {
+  font-family: var(--font-num);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  margin: 0 0 6px;
+}
+
+.krabi-fee__season {
+  font-size: 0.72rem;
+  color: var(--color-text-subtle);
+  margin: 0 0 8px;
+}
+
+.krabi-fee__note {
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.krabi-fee__link {
+  font-size: 0.74rem;
+  color: var(--color-brand);
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.krabi-fee__link:hover {
+  text-decoration: underline;
+}
+
+/* 待查證清單 */
+.krabi-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.krabi-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  min-height: 44px;
+  border-radius: var(--radius-btn);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.krabi-check:hover {
+  border-color: var(--color-brand-border);
+}
+
+.krabi-check input {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.krabi-check__text {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--color-text-primary);
+}
+
+.krabi-check input:checked ~ .krabi-check__text {
+  color: var(--color-text-subtle);
+  text-decoration: line-through;
+}
+
+/* 來源 */
+.krabi-sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.krabi-source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.84rem;
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+.krabi-source-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .krabi-cont-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .krabi-plan__stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .krabi-compare,
+  .krabi-calc {
+    padding: 18px 16px;
+  }
+}
