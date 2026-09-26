@@ -29,7 +29,10 @@
         </a>
 
         <nav class="top-nav__menu" aria-label="主要章節導覽">
-          <a href="#krabi" class="top-nav__link" data-nav-target="krabi">五方案</a>
+          <a href="#enso" class="top-nav__link" data-nav-target="enso">ENSO 評估</a>
+          <a href="#windows" class="top-nav__link" data-nav-target="windows">日期並列</a>
+          <a href="#krabi" class="top-nav__link" data-nav-target="krabi">5 月方案</a>
+          <a href="#krabi-april" class="top-nav__link" data-nav-target="krabi-april">4 月方案</a>
           <a href="#krabi-plan-list" class="top-nav__link" data-nav-target="krabi-plan-list">方案</a>
           <a href="#krabi-compare" class="top-nav__link" data-nav-target="krabi-compare">比較</a>
           <a href="#krabi-calc" class="top-nav__link" data-nav-target="krabi-calc">費用</a>
@@ -105,7 +108,136 @@
         </div>
       </section>
 
-      <!-- ────────── 甲米：五方案主體 ────────── -->
+      <!-- ────────── ENSO（El Niño）衝擊評估 ────────── -->
+    <section class="section section--enso" id="enso" aria-labelledby="enso-heading">
+      <div class="section-container">
+        <div class="section-header section-header--editorial">
+          <span class="section-eyebrow">2026/27 Super El Niño</span>
+          <h2 class="section-title" id="enso-heading">ONI 3.4 評估：為什麼 2027 年的日期選擇要重新算</h2>
+          <p class="section-desc">
+            2026 年 9 月起是超級 El Niño 年，預估持續到 2027 年 3–5 月。
+            這一節說明它對跳島行程的實際影響——方向與直覺相反：
+            雨可能更少，風險從「雨季」轉為「高溫」。
+          </p>
+        </div>
+
+        <!-- 現況摘要 -->
+        <div class="enso-status" id="enso-status"></div>
+
+        <!-- 官方預警時程 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">官方預警時程</h3>
+          <ol class="enso-timeline" id="enso-timeline"></ol>
+        </div>
+
+        <!-- 泰國氣象局警告 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">泰國氣象局（TMD）警告</h3>
+          <div class="tmd-grid" id="tmd-warnings"></div>
+        </div>
+
+        <!-- 對跳島的雙面影響 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">對跳島浮潛的實際影響</h3>
+          <p class="krabi-block__note" id="enso-headline"></p>
+          <div class="enso-impacts" id="enso-impacts"></div>
+        </div>
+
+        <!-- 高溫應對 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">El Niño 下的高溫應對（走 4 月必讀）</h3>
+          <div class="heat-grid" id="heat-preps"></div>
+        </div>
+
+        <!-- 誠實的限制 -->
+        <div class="enso-caveat" role="note">
+          <h4 class="enso-caveat__title">這些判斷的界限</h4>
+          <ul class="enso-caveat__list" id="enso-caveats"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────── 三個日期窗口並列比較 ────────── -->
+    <section class="section section--windows" id="windows" aria-labelledby="windows-heading">
+      <div class="section-container">
+        <div class="section-header section-header--editorial">
+          <span class="section-eyebrow">Date Windows · Side by Side</span>
+          <h2 class="section-title" id="windows-heading">三個日期窗口並列比較</h2>
+          <p class="section-desc">
+            4 月仍在乾季、Similan 在季內、渡輪有班；5 月進入季風轉換期且 Similan 接近季末。
+            兩個窗口各自的優勢與代價如下——沒有一個是全贏，這是取捨而非排名。
+          </p>
+        </div>
+
+        <div class="window-cards" id="window-cards" aria-label="日期窗口"></div>
+
+        <div class="krabi-compare krabi-compare--windows">
+          <div class="krabi-compare__header">
+            <h3 class="krabi-subtitle">逐項並列</h3>
+            <div class="krabi-compare__axis-tabs" id="window-axis-tabs" role="tablist" aria-label="切換日期比較軸"></div>
+          </div>
+          <div class="krabi-compare__body" id="window-compare-body"></div>
+          <p class="krabi-compare__legend">
+            <span class="krabi-legend__item"><span class="krabi-legend__dot krabi-legend__dot--best" aria-hidden="true"></span>該項最佳</span>
+            <span class="krabi-legend__item">1 = 負擔最小，5 = 負擔最大</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────── 4 月版五方案 ────────── -->
+    <section class="section section--krabi section--krabi-april" id="krabi-april" aria-labelledby="krabi-april-heading">
+      <div class="section-container">
+        <div class="section-header section-header--editorial">
+          <span class="section-eyebrow">April Edition · 2027/04/06 – 04/12</span>
+          <h2 class="section-title" id="krabi-april-heading">4 月首選窗口・五種方案</h2>
+          <p class="section-desc">
+            乾季末段、Similan 季內、渡輪有班，7 天可安排 5 天出海。
+            B 案走 Trang 群島的翡翠洞，是這輪研究找到最值得的秘境。
+          </p>
+        </div>
+
+        <!-- 4 月三個前提 -->
+        <div class="krabi-facts" id="april-key-facts" aria-label="4 月窗口前提"></div>
+
+        <!-- 4 月前提警示（含 ENSO 高溫） -->
+        <div class="krabi-freshness krabi-freshness--enso" role="note">
+          <p class="krabi-freshness__text" id="april-enso-note"></p>
+        </div>
+
+        <!-- 4 月版費用試算 -->
+        <div class="krabi-calc" id="april-calc">
+          <div class="krabi-calc__header">
+            <h3 class="krabi-subtitle">4 月版費用試算</h3>
+            <p class="krabi-calc__note" id="april-calc-note"></p>
+          </div>
+          <div class="krabi-calc__grid" id="april-cost-grid"></div>
+        </div>
+
+        <div class="krabi-plans" id="april-plan-list" aria-label="4 月五種方案"></div>
+
+        <div class="krabi-compare" id="april-compare">
+          <div class="krabi-compare__header">
+            <h3 class="krabi-subtitle">4 月版並排比較</h3>
+            <div class="krabi-compare__axis-tabs" id="april-axis-tabs" role="tablist" aria-label="切換 4 月比較軸"></div>
+          </div>
+          <div class="krabi-compare__body" id="april-compare-body"></div>
+        </div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">4 月版公園費</h3>
+          <div class="krabi-fees" id="april-fees"></div>
+        </div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">4 月版應變對照（乾季：重點在潮汐與高溫）</h3>
+          <div class="krabi-contingency" id="april-contingency"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ────────── 甲米：五方案主體 ────────── -->
       <section class="section section--krabi" id="krabi" aria-labelledby="krabi-heading">
         <div class="section-container">
           <div class="section-header section-header--editorial">

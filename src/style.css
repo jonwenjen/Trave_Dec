@@ -1597,3 +1597,238 @@ img, svg {
     padding: 18px 16px;
   }
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   2026/27 ENSO 評估 + 日期窗口並列 + 4 月方案
+   ═════════════════════════════════════════════════════════════════ */
+
+.section--enso {
+  background: linear-gradient(180deg, var(--krabi-forest, #1d3a33) 0%, #16302a 100%);
+  color: #f4efe6;
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+}
+.section--enso .section-title { color: #fff; }
+.section--enso .section-desc { color: rgba(244, 239, 230, 0.82); }
+.section--enso .section-eyebrow { color: #e8553a; }
+.section--enso .krabi-block { border-top-color: rgba(244, 239, 230, 0.16); }
+.section--enso .krabi-subtitle { color: #fff; }
+.section--enso .krabi-block__note { color: rgba(244, 239, 230, 0.7); }
+.section--enso .enso-caveat {
+  background: rgba(232, 85, 58, 0.12);
+  border: 1px solid rgba(232, 85, 58, 0.4);
+  border-radius: var(--krabi-radius, 14px);
+  padding: 1.25rem 1.4rem;
+  margin-top: 2rem;
+}
+.section--enso .enso-caveat__title { color: #f4a68f; margin-bottom: 0.6rem; font-size: 0.95rem; }
+.section--enso .enso-caveat__list { margin: 0; padding-left: 1.15rem; }
+.section--enso .enso-caveat__list li {
+  color: rgba(244, 239, 230, 0.86);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  margin-bottom: 0.35rem;
+}
+
+/* ENSO 現況 */
+.enso-status {
+  display: grid;
+  gap: 1.25rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(244, 239, 230, 0.18);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+@media (min-width: 760px) {
+  .enso-status { grid-template-columns: 200px 1fr; align-items: start; }
+}
+.enso-status__badge { text-align: left; }
+.enso-status__phase {
+  display: block;
+  font-family: var(--font-display, 'Noto Serif TC', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.enso-status__badge--danger .enso-status__phase { color: #f4a68f; }
+.enso-status__badge--warn .enso-status__phase { color: #e8c468; }
+.enso-status__issued { display: block; font-size: 0.78rem; opacity: 0.66; margin-top: 0.35rem; }
+.enso-status__summary { margin: 0 0 1rem; font-size: 1rem; line-height: 1.8; color: rgba(244, 239, 230, 0.92); }
+.enso-status__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.enso-metric {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+}
+.enso-metric__label { display: block; font-size: 0.75rem; opacity: 0.68; margin-bottom: 0.25rem; }
+.enso-metric__value { display: block; font-family: var(--font-mono, 'DM Sans', sans-serif); font-size: 1.2rem; font-weight: 700; color: #f4efe6; }
+.enso-status__source { font-size: 0.85rem; color: #7fc7b3; }
+
+/* 時間軸 */
+.enso-timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
+.enso-timeline__item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0.35rem 1rem;
+  align-items: baseline;
+  border-left: 2px solid rgba(232, 85, 58, 0.5);
+  padding-left: 1rem;
+}
+.enso-timeline__period { font-family: var(--font-mono, 'DM Sans', sans-serif); font-size: 0.85rem; color: #f4a68f; font-weight: 600; }
+.enso-timeline__label { font-weight: 600; font-size: 0.95rem; }
+.enso-timeline__note { grid-column: 2; font-size: 0.85rem; opacity: 0.7; line-height: 1.65; }
+
+/* TMD 警告卡 */
+.tmd-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.tmd-card {
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem;
+  border-left: 3px solid;
+  background: rgba(255, 255, 255, 0.05);
+}
+.tmd-card--danger { border-left-color: #e8553a; }
+.tmd-card--warn { border-left-color: #e8c468; }
+.tmd-card--info { border-left-color: #7fc7b3; }
+.tmd-card__label { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.66; margin-bottom: 0.45rem; }
+.tmd-card__value { margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 600; line-height: 1.5; color: #fff; }
+.tmd-card__detail { margin: 0; font-size: 0.88rem; line-height: 1.7; opacity: 0.76; }
+
+/* 雙面影響 */
+.enso-impacts { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.enso-impact {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(244, 239, 230, 0.12);
+}
+.enso-impact--good { border-color: rgba(127, 199, 179, 0.45); }
+.enso-impact--danger { border-color: rgba(232, 85, 58, 0.45); }
+.enso-impact--warn { border-color: rgba(232, 196, 104, 0.45); }
+.enso-impact__head { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.6rem; }
+.enso-impact__icon {
+  font-family: var(--font-mono, 'DM Sans', sans-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  flex: 0 0 auto;
+}
+.enso-impact--good .enso-impact__icon { color: #7fc7b3; }
+.enso-impact--danger .enso-impact__icon { color: #f4a68f; }
+.enso-impact--warn .enso-impact__icon { color: #e8c468; }
+.enso-impact__aspect { display: block; font-size: 0.78rem; opacity: 0.62; letter-spacing: 0.04em; }
+.enso-impact__verdict { display: block; font-weight: 600; font-size: 1rem; margin-top: 0.15rem; color: #fff; }
+.enso-impact__direction {
+  margin-left: auto;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.enso-impact__detail { margin: 0; font-size: 0.87rem; line-height: 1.7; opacity: 0.78; }
+
+/* 高溫應對 */
+.heat-grid { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.heat-card { background: rgba(232, 196, 104, 0.1); border: 1px solid rgba(232, 196, 104, 0.3); border-radius: 12px; padding: 1rem 1.1rem; }
+.heat-card__title { margin: 0 0 0.4rem; font-size: 0.95rem; color: #f4dfa8; }
+.heat-card__detail { margin: 0; font-size: 0.85rem; line-height: 1.7; opacity: 0.8; }
+
+/* ═══ 日期窗口 ═══ */
+.section--windows { background: var(--krabi-paper, #faf6ef); }
+.window-cards { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); margin-bottom: 2.5rem; }
+.window-card {
+  background: #fff;
+  border: 1px solid rgba(29, 58, 51, 0.12);
+  border-radius: 16px;
+  padding: 1.3rem 1.35rem;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(29, 58, 51, 0.06);
+}
+.window-card--reco { border-color: #e8553a; box-shadow: 0 6px 24px rgba(232, 85, 58, 0.14); }
+.window-card__flag {
+  position: absolute; top: -11px; left: 1.35rem;
+  background: #e8553a; color: #fff;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.2rem 0.65rem; border-radius: 999px;
+  letter-spacing: 0.06em;
+}
+.window-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
+.window-card__label { margin: 0; font-family: var(--font-display, 'Noto Serif TC', serif); font-size: 1.15rem; color: #1d3a33; }
+.window-card__score { font-family: var(--font-mono, 'DM Sans', sans-serif); font-size: 1.6rem; font-weight: 700; color: #e8553a; }
+.window-card__score small { font-size: 0.8rem; color: rgba(29, 58, 51, 0.45); }
+.window-card__tagline { margin: 0 0 0.75rem; font-size: 0.92rem; line-height: 1.65; color: rgba(29, 58, 51, 0.85); }
+.window-card__notes { margin: 0 0 0.75rem; padding-left: 1.1rem; }
+.window-card__notes li { font-size: 0.85rem; line-height: 1.7; color: rgba(29, 58, 51, 0.75); margin-bottom: 0.25rem; }
+.window-card__source { margin: 0; font-size: 0.76rem; color: rgba(29, 58, 51, 0.5); }
+.window-cards__summary {
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1.1rem;
+  background: rgba(232, 85, 58, 0.08);
+  border-left: 3px solid #e8553a;
+  border-radius: 0 10px 10px 0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #1d3a33;
+}
+.krabi-compare--windows .krabi-table { min-width: 520px; }
+/* 4 月版有 5 個方案欄 + 軸欄，手機上需更寬才不會壓縮 */
+#april-compare .krabi-table { min-width: 680px; }
+
+/* ═══ 4 月方案專屬 ═══ */
+.section--krabi-april { background: linear-gradient(180deg, #f3f7f5 0%, #faf6ef 100%); }
+.krabi-freshness--enso {
+  background: rgba(232, 196, 104, 0.16);
+  border-left-color: #e8c468;
+}
+.krabi-plan__snorkel {
+  font-size: 0.72rem; font-weight: 600;
+  padding: 0.18rem 0.55rem; border-radius: 999px;
+  background: rgba(127, 199, 179, 0.22);
+  color: #1d6a58;
+}
+.krabi-plan__snorkel--similan { background: rgba(232, 85, 58, 0.16); color: #b8391f; }
+
+@media (max-width: 520px) {
+  .enso-timeline__item { grid-template-columns: 1fr; }
+  .enso-timeline__note { grid-column: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window-card, .tmd-card, .enso-impact, .heat-card { transition: none; }
+}
+
+
+/* ─── 深色模式：ENSO / 窗口 / 4 月 區塊 ─── */
+:root[data-theme='dark'] .section--windows,
+:root[data-theme='dark'] .section--krabi-april {
+  background: #1a2420;
+}
+:root[data-theme='dark'] .section--krabi-april {
+  background-image: linear-gradient(180deg, #1c2823 0%, #1a2420 100%);
+}
+:root[data-theme='dark'] .window-card {
+  background: #22302a;
+  border-color: rgba(244, 239, 230, 0.14);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+:root[data-theme='dark'] .window-card--reco { border-color: #e8553a; }
+:root[data-theme='dark'] .window-card__label { color: #f2efe9; }
+:root[data-theme='dark'] .window-card__tagline { color: rgba(242, 239, 233, 0.82); }
+:root[data-theme='dark'] .window-card__notes li { color: rgba(242, 239, 233, 0.68); }
+:root[data-theme='dark'] .window-card__score small { color: rgba(242, 239, 233, 0.45); }
+:root[data-theme='dark'] .window-card__source { color: rgba(242, 239, 233, 0.45); }
+:root[data-theme='dark'] .window-cards__summary {
+  background: rgba(232, 85, 58, 0.14);
+  color: #f2efe9;
+}
+:root[data-theme='dark'] .krabi-freshness--enso {
+  background: rgba(232, 196, 104, 0.14);
+  border-left-color: #e8c468;
+}
+:root[data-theme='dark'] .krabi-plan__snorkel { background: rgba(127, 199, 179, 0.18); color: #8fd8c4; }
+:root[data-theme='dark'] .krabi-plan__snorkel--similan { background: rgba(232, 85, 58, 0.2); color: #f4a68f; }

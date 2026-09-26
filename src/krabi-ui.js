@@ -38,7 +38,7 @@ import {
 
 const CHECKLIST_KEY = 'trave_dec_krabi_checklist';
 
-export function createKrabiSection({ getEl, esc, toast }) {
+export function createKrabiSection({ getEl, esc, toast, onTravelersChange }) {
   const el = (id) => getEl(id);
 
   let travelers = KRABI_META.defaultTravelers;
@@ -421,6 +421,13 @@ export function createKrabiSection({ getEl, esc, toast }) {
     travelers = next;
     syncCalcControls();
     renderCalc();
+    // 通知其他區塊（如 4 月方案）同步重算費用試算
+    if (typeof onTravelersChange === 'function') onTravelersChange(travelers);
+  }
+
+  /** 供其他區塊讀取目前的人數 */
+  function getTravelers() {
+    return travelers;
   }
 
   function render() {
@@ -438,5 +445,5 @@ export function createKrabiSection({ getEl, esc, toast }) {
     renderSources();
   }
 
-  return { render, wire };
+  return { render, wire, getTravelers };
 }

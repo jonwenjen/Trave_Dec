@@ -362,3 +362,216 @@ export function toggleChecklistItem(checked, id) {
   }
   return list;
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   2026/27 ENSO 衝擊評估 — 純函式
+   資料來源見 src/data/krabi-climate.js
+   ═════════════════════════════════════════════════════════════════ */
+
+import {
+  ENSO_CURRENT,
+  ENSO_IMPACT_ANALYSIS,
+  DATE_WINDOWS as CLIMATE_DATE_WINDOWS,
+  WINDOW_AXES as CLIMATE_WINDOW_AXES,
+} from './data/krabi-climate.js';
+import {
+  KRABI_PLANS_APRIL,
+  APRIL_PARK_FEES as _APRIL_FEES,
+} from './data/krabi-april.js';
+
+export {
+  ENSO_CURRENT,
+  ENSO_IMPACT_ANALYSIS,
+  CLIMATE_DATE_WINDOWS as DATE_WINDOWS,
+  CLIMATE_WINDOW_AXES as WINDOW_AXES,
+  KRABI_PLANS_APRIL,
+};
+
+/** 非數值欄位的正規化對照（供比較與顯示用） */
+const WINDOW_STATE_SCORE = {
+  similanStatus: { 'in-season': 5, 'late-season': 3, closed: 1 },
+  songkranImpact: { none: 5, residual: 3, direct: 1 },
+};
+
+const WINDOW_STATE_LABEL = {
+  similanStatus: { 'in-season': '季內', 'late-season': '季末風險', closed: '關閉' },
+  songkranImpact: { none: '無影響', residual: '節後餘波', direct: '正面撞上' },
+};
+
+function windowAxisScore(value, axis) {
+  const table = WINDOW_STATE_SCORE[axis.key];
+  if (table) return table[value] ?? 0;
+  const n = Number(value) || 0;
+  // 1–5 正規化為 0–100
+  return Math.round(((Math.max(1, Math.min(5, n)) - 1) / 4) * 100);
+}
+
+function windowAxisDisplay(w, axis) {
+  const table = WINDOW_STATE_LABEL[axis.key];
+  if (table) return table[w[axis.key]] ?? '—';
+  return `${w[axis.key]} / 5`;
+}
+
+/**
+ * 單一日期窗口的綜合評分。
+ * 每個軸依 betterWhen 轉成 0–100，總分為平均。
+ * @returns {{total:number, byAxis:Object<string,number>}}
+ */
+export function windowScore(w, axes) {
+  if (!w) return { total: 0, byAxis: {} };
+  const axisList = axes || CLIMATE_WINDOW_AXES;
+  const byAxis = {};
+  let sum = 0;
+  let n = 0;
+
+  for (const axis of axisList) {
+    const raw = windowAxisScore(w[axis.key], axis);
+    const score = axis.betterWhen === 'low' ? 100 - raw : raw;
+    byAxis[axis.key] = score;
+    sum += score;
+    n += 1;
+  }
+
+  return { total: n ? Math.round(sum / n) : 0, byAxis };
+}
+
+/** 推薦的日期窗口（資料中僅一個標為 recommended） */
+export function recommendedWindow() {
+  return CLIMATE_DATE_WINDOWS.find((w) => w.recommended) || CLIMATE_DATE_WINDOWS[0];
+}
+
+/** 單一軸的最佳窗口；either 軸不參與，回傳 null */
+export function bestWindowForAxis(key, axes) {
+  const axis = (axes || CLIMATE_WINDOW_AXES).find((a) => a.key === key);
+  if (!axis || axis.betterWhen === 'either') return null;
+  return CLIMATE_DATE_WINDOWS.reduce((best, w) => {
+    const a = windowAxisScore(w[key], axis);
+    const b = windowAxisScore(best[key], axis);
+    return axis.betterWhen === 'low' ? (a < b ? w : best) : (a > b ? w : best);
+  }, CLIMATE_DATE_WINDOWS[0]).id;
+}
+
+/**
+ * 比較矩陣：每個軸 × 每個窗口，並標出最佳。
+ * @returns {Array<{key,label,hint?,betterWhen,best:?string,values:Array<{id,score,display}>}>}
+ */
+export function compareWindows(windows, axes) {
+  const list = windows || CLIMATE_DATE_WINDOWS;
+  const axisList = axes || CLIMATE_WINDOW_AXES;
+
+  return axisList.map((axis) => {
+    const values = list.map((w) => ({
+      id: w.id,
+      label: w.label,
+      score: windowAxisScore(w[axis.key], axis),
+      display: windowAxisDisplay(w, axis),
+    }));
+    let best = null;
+    if (axis.betterWhen !== 'either' && values.length) {
+      const reduceBy = axis.betterWhen === 'low' ? 'min' : 'max';
+      const pick = values.reduce((acc, v) => {
+        if (!acc) return v;
+        if (reduceBy === 'min') return v.score < acc.score ? v : acc;
+        return v.score > acc.score ? v : acc;
+      }, null);
+      best = pick ? pick.id : null;
+    }
+    return {
+      key: axis.key,
+      label: axis.label,
+      hint: axis.hint,
+      betterWhen: axis.betterWhen,
+      best,
+      values,
+    };
+  });
+}
+
+/** 依方向取出 ENSO 影響（favourable / adverse / unclear） */
+export function impactByDirection(direction) {
+  return ENSO_IMPACT_ANALYSIS.effects.filter((e) => e.direction === direction);
+}
+
+/** 一段可直接顯示的 ENSO 摘要 */
+export function summarizeEnso() {
+  return (
+    `${ENSO_IMPACT_ANALYSIS.headline}。` +
+    `NOAA 於 ${ENSO_CURRENT.issuedDate} 發布診斷：${ENSO_CURRENT.summary}` +
+    `但須注意：${ENSO_IMPACT_ANALYSIS.caveats[0]}`
+  );
+}
+
+/**
+ * 依日期判斷 El Niño 下的高溫風險。
+ * 4 月下旬至 5 月初為最高（El Niño 峰值後的熱帶高溫）。
+ */
+export function heatRiskLevel(isoDate) {
+  const s = String(isoDate || '');
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return 'unknown';
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+
+  if (month === 4) {
+    if (day <= 15) return 'moderate';
+    return 'high';
+  }
+  if (month === 5) {
+    if (day <= 10) return 'high';
+    return 'moderate';
+  }
+  if (month >= 3) return 'moderate';
+  return 'low';
+}
+
+/** 4 月方案中，哪些確實含 Similan */
+export function aprilPlansWithSimilan() {
+  return KRABI_PLANS_APRIL.filter((p) => JSON.stringify(p).includes('Similan'));
+}
+
+/**
+ * 4 月方案的秘境可達性評分（0–5）。
+ * 以是否提及 Trang 群島的秘境為依據。
+ */
+export function aprilPlanSecretScore(plan) {
+  if (!plan) return 0;
+  const text = JSON.stringify(plan);
+  const markers = ['Koh Mook', 'Koh Kradan', 'Koh Chueak', 'Koh Ngai', 'Koh Libong', '翡翠洞', 'Trang'];
+  let hits = 0;
+  for (const m of markers) if (text.includes(m)) hits += 1;
+  return Math.min(5, hits);
+}
+
+/** Similan 季節窗口查證（開放季前季為 10/15–5/15） */
+export function verifySimilanWindow(isoDate) {
+  const s = String(isoDate || '');
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) {
+    return { inSeason: false, note: '日期格式無法解析，請確認後再查證。' };
+  }
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const md = month * 100 + day;
+
+  // 10/15 – 隔年 5/15
+  if (md >= 1015 || md <= 515) {
+    const late = md > 501 && md <= 515;
+    return {
+      inSeason: true,
+      note: late
+        ? '仍在季內，但已接近 5/15 季末，出發前務必確認 2026–27 季的確切公告。'
+        : '在季內（10/15–5/15），2027 年確切開放日須以官方公告為準。',
+    };
+  }
+  return {
+    inSeason: false,
+    note: '已過前季開放期（10/15–5/15），2026–27 季的確切起訖日須查證。',
+  };
+}
+
+/** 4 月方案的公園費總和 */
+export function totalParkFeeByPlan(plan) {
+  if (!plan || !Array.isArray(plan.days)) return 0;
+  return plan.days.reduce((sum, d) => sum + (Number(d && d.parkFeeTHB) || 0), 0);
+}

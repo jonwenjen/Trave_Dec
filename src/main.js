@@ -11,6 +11,7 @@
 
 import './style.css';
 import { createKrabiSection } from './krabi-ui.js';
+import { createKrabiClimateSection } from './krabi-climate-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -96,7 +97,21 @@ function renderOfflineBadge() {
    甲米區塊
    ═════════════════════════════════════════════════════════════════ */
 
-const krabi = createKrabiSection({ getEl: $, esc, toast });
+// 4 月／ENSO 區塊需要讀取甲米區塊的人數，並在人數變動時重算費用試算
+let climate = null;
+const krabi = createKrabiSection({
+  getEl: $,
+  esc,
+  toast,
+  onTravelersChange: () => climate && climate.onTravelersChange(),
+});
+
+climate = createKrabiClimateSection({
+  getEl: $,
+  esc,
+  toast,
+  getTravelers: () => krabi.getTravelers(),
+});
 
 /* ═════════════════════════════════════════════════════════════════
    啟動
@@ -112,6 +127,8 @@ function init() {
 
   krabi.render();
   krabi.wire();
+  climate.render();
+  climate.wire();
 
   // 註冊 Service Worker（離線支援核心內容）
   if ('serviceWorker' in navigator && import.meta.env && import.meta.env.PROD) {
