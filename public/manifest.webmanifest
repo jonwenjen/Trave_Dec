@@ -1,14 +1,14 @@
 {
-  "name": "Trave_Dec — 2307 志賀高原滑雪旅行",
-  "short_name": "Trave_Dec",
-  "description": "10 日滑雪行程駕駛艙：行程、轉乘風險、預算與離線隨身工具。所有時刻與票價為規劃估算。",
+  "name": "Trave_Dec — 泰國甲米跳島浮潛 2027/05",
+  "short_name": "甲米五案",
+  "description": "泰國甲米七日跳島浮潛的五種方案並排比較：季節前提、費用試算、季風應變與訂票前待查證清單。所有價格與時刻為前季參考。",
   "lang": "zh-Hant",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#faf8f4",
-  "theme_color": "#1b1a18",
+  "theme_color": "#1d3a33",
   "icons": [
     {
       "src": "./icon.svg",

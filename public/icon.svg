@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" role="img" aria-label="Trave_Dec">
-  <rect width="192" height="192" rx="34" fill="#1b1a18"/>
-  <path d="M20 138 L70 62 L104 112 L124 84 L172 138 Z" fill="#faf8f4"/>
-  <path d="M70 62 L104 112 L86 112 Z" fill="#d6cfc1"/>
-  <circle cx="140" cy="48" r="14" fill="#b8402c"/>
-  <rect x="20" y="146" width="152" height="6" rx="3" fill="#2f5a4c"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" role="img" aria-label="Trave_Dec 甲米跳島浮潛">
+  <rect width="192" height="192" rx="34" fill="#1d3a33"/>
+  <circle cx="146" cy="48" r="15" fill="#e8553a"/>
+  <path d="M22 138 q22 -30 44 0 t44 0 t44 0 t22 0 v22 H22 Z" fill="#2c554b"/>
+  <path d="M22 120 q22 -30 44 0 t44 0 t44 0 t22 0 v40 H22 Z" fill="#f7f5ef"/>
+  <path d="M22 120 q22 -30 44 0 t44 0 t44 0 t22 0 v6 q-22 30 -44 0 t-44 0 t-44 0 t-22 0 Z" fill="#e8553a"/>
+  <path d="M40 80 q16 -10 30 0 q-16 8 -30 0 Z" fill="#f7f5ef" opacity="0.85"/>
 </svg>

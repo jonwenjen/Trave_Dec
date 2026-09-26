@@ -1,9 +1,8 @@
 /**
  * Trave_Dec — 甲米 2027/05 跳島浮潛・五方案比較（UI 層）
  *
- * 與日本滑雪行程完全獨立：不共用 state、不影響既有 tab 與資料。
  * 本地狀態只有三個：出行人數、是否含機票、目前展開的方案卡。
- * 勾選清單另存 localStorage（與行程存檔分開，避免影響既有 reset）。
+ * 勾選清單存於獨立的 localStorage key，與站內其他設定隔離。
  */
 
 import {
@@ -153,6 +152,9 @@ export function createKrabiSection({ getEl, esc, toast }) {
     if (input) input.value = travelers;
     const flight = el('krabi-include-flight');
     if (flight) flight.checked = includeFlight;
+    // Hero 首屏的人數與試算連動
+    const heroCount = el('hero-party-count');
+    if (heroCount) heroCount.textContent = travelers;
   }
 
   /* ── 五方案卡 ── */

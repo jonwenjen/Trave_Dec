@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "2307 志賀高原滑雪旅行 — mobile-first trip companion in Traditional Chinese",
+  "description": "泰國甲米跳島浮潛 2027/05 — mobile-first five-plan comparison in Traditional Chinese",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
