@@ -16,6 +16,7 @@ import { createKrabiRulesSection } from './krabi-rules-ui.js';
 import { createKrabiV3Section } from './krabi-v3-ui.js';
 import { createPhuketSection } from './phuket-ui.js';
 import { createPricingSection } from './pricing-ui.js';
+import { createFareStructureSection } from './fare-structure-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -135,6 +136,9 @@ rules = createKrabiRulesSection({
   esc,
   getTravelers: () => krabi.getTravelers(),
 });
+
+// 機票結構：來回 vs 兩張單程 vs 混搭（含目標窗口班表衝突檢查）
+createFareStructureSection();
 
 // 2026 前季價格：十四案統一 7 天、統一價格基準，讓兩區可直接比較
 pricing = createPricingSection({

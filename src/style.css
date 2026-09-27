@@ -2512,3 +2512,59 @@ tr.is-best-row th, tr.is-best-row td { background: var(--color-brand-light); }
 .price__date-warning { font-size: 0.875rem; line-height: 1.7; margin: 0 0 12px; padding: 12px 14px;
   background: color-mix(in srgb, var(--color-status-estimate) 12%, transparent);
   border-left: 3px solid var(--color-status-estimate); border-radius: var(--radius-btn); color: var(--color-text-primary); }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   機票結構（來回／兩張單程／混搭）
+   ═════════════════════════════════════════════════════════════════ */
+
+.fare__conflict {
+  background: var(--color-pine); color: var(--color-pine-text);
+  border-radius: var(--radius-card); padding: 22px 24px; margin-bottom: 34px;
+}
+.fare__conflict-h { font-size: 1.0625rem; font-weight: 700; margin: 0 0 14px; }
+.fare__conflict-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.fare__conflict-table th, .fare__conflict-table td {
+  padding: 9px 10px; text-align: left; font-size: 0.8125rem;
+  border-bottom: 1px solid var(--color-pine-mid);
+}
+.fare__conflict-table thead th { font-weight: 700; color: var(--color-brand-light); font-size: 0.75rem; }
+.fare__conflict-table tbody th { font-weight: 600; }
+.fare__ok { color: #7ee0a8; font-weight: 700; }
+.fare__bad { color: #ffb4a2; font-weight: 700; }
+.fare__conflict-verdict, .fare__conflict-solution {
+  font-size: 0.9375rem; line-height: 1.7; margin: 0 0 8px; color: var(--color-pine-text-sub);
+}
+.fare__conflict-verdict strong, .fare__conflict-solution strong { color: #fff; }
+
+.fare__cards { display: grid; gap: 13px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.fare__card {
+  background: var(--color-bg-paper); border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card); padding: 16px 18px; position: relative;
+}
+.fare__card.is-rec { border-color: var(--color-brand); border-width: 2px; }
+.fare__card.has-warn { border-left: 3px solid var(--color-status-estimate); }
+.fare__badge {
+  position: absolute; top: -9px; left: 16px; padding: 3px 10px; border-radius: var(--radius-pill);
+  background: var(--color-brand); color: #fff; font-size: 0.6875rem; font-weight: 700;
+}
+.fare__label { font-size: 0.9375rem; font-weight: 700; margin: 0 0 8px; color: var(--color-text-primary); padding-top: 4px; }
+.fare__price { font-size: 1.125rem; font-weight: 800; margin: 0 0 3px; color: var(--color-brand); }
+.fare__hours { font-size: 0.75rem; color: var(--color-text-subtle); margin: 0 0 10px; }
+.fare__meta { margin: 0; display: grid; gap: 6px; }
+.fare__meta dt { font-size: 0.6875rem; font-weight: 700; color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.03em; }
+.fare__meta dd { margin: 0 0 4px; font-size: 0.8125rem; line-height: 1.6; color: var(--color-text-secondary); }
+.fare__note { font-size: 0.8125rem; line-height: 1.65; margin: 8px 0 0; color: var(--color-text-primary); }
+.fare__warn { font-size: 0.8125rem; line-height: 1.65; margin: 8px 0 0; color: var(--color-status-estimate); font-weight: 600; }
+.fare__length { font-size: 0.8125rem; line-height: 1.65; margin: 6px 0 0; padding: 8px 10px; border-radius: var(--radius-btn); background: color-mix(in srgb, var(--color-status-estimate) 12%, transparent); color: var(--color-text-primary); }
+
+.fare__answer { display: grid; gap: 12px; }
+.fare__answer-item { padding: 14px 16px; background: var(--color-bg-paper); border-radius: var(--radius-btn); border-left: 3px solid var(--color-brand); }
+.fare__answer-item h4 { font-size: 0.9375rem; font-weight: 700; margin: 0 0 6px; color: var(--color-text-primary); }
+.fare__answer-item p { font-size: 0.875rem; line-height: 1.7; margin: 0; color: var(--color-text-secondary); }
+.fare__answer-item strong { color: var(--color-brand); }
+.fare__answer-foot { font-size: 0.9375rem; line-height: 1.75; margin: 14px 0 0; padding: 14px 16px; background: var(--color-brand-light); border-radius: var(--radius-btn); color: var(--color-text-primary); }
+
+@media (max-width: 720px) {
+  .fare__cards { grid-template-columns: 1fr; }
+}

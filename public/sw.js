@@ -5,7 +5,7 @@
  * 不做背景同步，也不快取任何第三方網域（官方連結仍需連網）。
  */
 
-const CACHE = 'trave-dec-v7-flights-fix';
+const CACHE = 'trave-dec-v8-fare-structure';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {

@@ -313,5 +313,90 @@ export const PRICE_CAVEAT = {
     '不含：保險、TDAC 入境費、潛水裝備租借、Similan 活動費（每日約 ฿200）',
     '7 天壓縮案不含自由潛水課程證書費（P3 另計）',
     '2027/04 的實際價格須重新查證——旺季（12–2 月）通常高於此基準',
+    '頁面混搭報價的實際旅遊天數可能長於 7 天（見 OPEN_JAW 的 lengthNote），不可直接當 7 天價',
   ],
+};
+
+/* ───────────── 單程／來回／混搭（open-jaw）實測 ───────────── */
+
+/**
+ * 買「兩張單程」與買「一張來回」的比較。
+ *
+ * 直飛單程 TWD 4,773 ×2 = 9,546，直飛來回 9,950 —— 單程湊兩張反而略便宜，
+ * 但差距只有 404 TWD 且不含行李與改票彈性，**不建議刻意拆單**。
+ */
+export const FARE_STRUCTURE = {
+  'direct-roundtrip': {
+    id: 'direct-roundtrip',
+    label: '直飛來回（同航空公司）',
+    twd: { min: 7571, max: 11081 },
+    hours: '單程 4h15–4h25m',
+    basis: 'Trip.com 實測：9/1 週二出→9/8 週二回（7 天）TWD 9,950；9/5→9/8 6 天 TWD 10,241',
+    flexibility: '班表受限：每週僅週二、週六直飛，日期幾乎無法調整',
+    recommended: true,
+  },
+  'direct-oneway-pair': {
+    id: 'direct-oneway-pair',
+    label: '兩張直飛單程（自行拼湊）',
+    twd: { min: 7272, max: 11081 },
+    hours: '單程 4h15–4h25m',
+    basis: '直飛單程最低 TWD 4,773（8/29 週六）×2 ≈ 9,546，略低於來回 9,950',
+    flexibility: '可分開訂不同日期，但**兩張單程通常不含行李、不利改期，且無來回折扣**',
+    recommended: false,
+    warning: '省下僅約 400 TWD，不足以抵銷拆單的風險。**不建議刻意拆單。**',
+  },
+  'open-jaw-direct-out': {
+    id: 'open-jaw-direct-out',
+    label: '混搭：去直飛 ＋ 回程轉機',
+    twd: { min: 7050, max: 9500 },
+    hours: '去 4h25m ＋ 回 8–15h',
+    basis: 'Trip.com 實測混搭：去 9/5 週六直飛 ＋ 回 9/19 週六轉機，TWD 7,111',
+    flexibility:
+      '**這是解決班表限制的關鍵**：回程可選任一日（轉機航班每日班），' +
+      '解決「04-12 週一無直飛班」的問題。',
+    recommended: true,
+    lengthNote: '⚠️ 此報價的回程為 9/19，等於 14 天行程。**縮短至 7 天需重新查價**，不可直接沿用。',
+  },
+  'open-jaw-connect-out': {
+    id: 'open-jaw-connect-out',
+    label: '混搭：去轉機 ＋ 回直飛',
+    twd: { min: 7050, max: 9500 },
+    hours: '去 8–15h ＋ 回 4h15m',
+    basis: '同一報價來源的反向組合，去程較長',
+    flexibility: '出發日不受週二／週六限制',
+    recommended: false,
+    lengthNote: '⚠️ 同上，去程轉機會吃掉出發日，出海日數實際減少一天。',
+  },
+  'connect-roundtrip': {
+    id: 'connect-roundtrip',
+    label: '純轉機來回',
+    twd: { min: 7053, max: 8000 },
+    hours: '單程 8–15h（含中轉等待）',
+    basis: 'Trip.com 實測：9/13→9/19 TWD 7,053；9/14→9/19 TWD 7,111',
+    flexibility: '每日有班，日期完全自由',
+    recommended: true,
+    note: '**最省錢但最耗時間。**省下約 3,100–4,000 TWD，單程多花 4–10 小時。',
+  },
+};
+
+/**
+ * 目標窗口的班表衝突檢查。
+ *
+ * 虎航直飛每週二、週六。目標 7 天窗口 2027-04-06（週二）出、
+ * 2027-04-12（週一）回 —— 回程沒有直飛班，**純直飛來回不可行**。
+ */
+export const SCHEDULE_CONFLICT = {
+  targetStart: '2027-04-06',
+  targetEnd: '2027-04-12',
+  directDays: [2, 6],
+  startOk: true,
+  endOk: false,
+  nearestDirectReturn: '2027-04-13',
+  nearestDirectReturnWeekday: '週二',
+  pureDirectFeasible: false,
+  workaround: '04-06 週二出 → 04-13 週二回 = 8 天（多 1 天）',
+  orShift: '04-10 週六出 → 04-13 週二回 = 4 天（少 3 天）',
+  openJawSolution:
+    '**去程直飛（04-06 週二）＋ 回程轉機（04-12 週一）** —— ' +
+    '保留 7 天 6 晚，且回程不必等週二。代價是回程多花 4–10 小時。',
 };
