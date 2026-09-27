@@ -399,9 +399,19 @@ const WINDOW_STATE_LABEL = {
   songkranImpact: { none: '無影響', residual: '節後餘波', direct: '正面撞上' },
 };
 
+/**
+ * 單一窗口某一軸的 0–100 分數。
+ *
+ * 兩類軸都必須正規化成同一個尺度再平均——這裡曾有 bug：字串狀態軸
+ * （Similan 季內、宋干節影響）直接回傳 0–5 的原始碼值，卻被 windowScore
+ * 當成 0–100 使用，導致這兩項決定性優勢的權重只有數字軸的四分之一。
+ */
 function windowAxisScore(value, axis) {
   const table = WINDOW_STATE_SCORE[axis.key];
-  if (table) return table[value] ?? 0;
+  if (table) {
+    const raw = table[value] ?? 0; // 0–5
+    return Math.round(((raw - 1) / 4) * 100);
+  }
   const n = Number(value) || 0;
   // 1–5 正規化為 0–100
   return Math.round(((Math.max(1, Math.min(5, n)) - 1) / 4) * 100);
@@ -672,14 +682,20 @@ export function planFreediveScore(plan) {
 
 /**
  * 法規負擔 0–5（數字越高代表越麻煩）。
- * 涵蓋公園越多、需確認的額外規定越多。
+ *
+ * 設計原則：行前確認成本是**固定的**——不論涵蓋幾個公園，都要查一遍規定、
+ * 選業者、確認救生衣與督導。真正增加成本的是「點位本身的額外要求」
+ * （翡翠洞的潮汐與 dive light）與「跨公園轉移」。
+ *
+ * 早期版本用 marineAreas.length 線性累加，導致「只去一個海域」自動拿滿分、
+ * 把真正有內容的多區方案壓下去——那是評分權重設計錯誤，不是方案較差。
  */
 export function planLegalBurden(plan) {
   if (!plan) return 0;
-  const areas = Array.isArray(plan.marineAreas) ? plan.marineAreas.length : 0;
-  let burden = areas;
-  if (planRequiresLandTransfer(plan)) burden += 1; // 跨公園轉移
-  if (planCoversEmeraldCave(plan)) burden += 0.5; // 潮汐與 dive light
+  let burden = 0.5; // 行前確認的固定基數
+  if (planCoversEmeraldCave(plan)) burden += 1.5; // 潮汐時段 + dive light + 頭頂受限
+  if (planCoversSimilan(plan)) burden += 0.5; // 國家公園專屬的深度與人數規定
+  if (planRequiresLandTransfer(plan)) burden += 0.5; // 跨公園轉移
   return Math.min(5, burden);
 }
 

@@ -180,8 +180,8 @@ describe('window scoring helpers', () => {
     assert.equal(bestWindowForAxis('heatLevel', WINDOW_AXES), 'apr-early');
     assert.equal(bestWindowForAxis('seaStability', WINDOW_AXES), 'apr-early');
     assert.equal(bestWindowForAxis('rainRisk', WINDOW_AXES), 'apr-early');
-    // either 軸不參與比較
-    assert.equal(bestWindowForAxis('similanStatus', WINDOW_AXES), null);
+    // Similan 季節已改為 high-better（有明確好壞），因此參與比較
+    assert.equal(bestWindowForAxis('similanStatus', WINDOW_AXES), 'apr-early');
   });
 });
 

@@ -2084,3 +2084,146 @@ img, svg {
   .aida-card__list > div { flex-direction: column; gap: 0.1rem; }
   .plan6__score { margin-left: 0; }
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   九日三案（放寬天數 ＋ 雙點進出）
+   ═════════════════════════════════════════════════════════════════ */
+
+.plan9__premise {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-brand);
+  border-radius: var(--radius-card);
+  padding: 20px 22px;
+  margin-bottom: 28px;
+}
+.plan9__premise-h {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: var(--color-text-primary);
+}
+.plan9__premise-list { margin: 0; display: grid; gap: 14px; }
+.plan9__premise-list > div { display: grid; gap: 4px; }
+.plan9__premise-list dt {
+  font-size: 0.875rem; font-weight: 700; color: var(--color-brand);
+  letter-spacing: 0.01em;
+}
+.plan9__premise-list dd {
+  margin: 0; font-size: 0.9375rem; line-height: 1.65; color: var(--color-text-secondary);
+}
+.plan9__premise-cost { border-top: 1px dashed var(--color-border); padding-top: 12px; }
+.plan9__premise-cost dt { color: var(--color-risk-med); }
+
+.plan9__list {
+  display: grid; gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+.plan9 {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.plan9__head { display: grid; gap: 8px; }
+.plan9__head-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.plan9__tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--color-brand); color: #fff; font-weight: 700; font-size: 1rem;
+  flex-shrink: 0;
+}
+.plan9__badge {
+  font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;
+  background: var(--color-bg-paper);
+  color: var(--color-text-secondary); font-weight: 600;
+}
+.plan9__badge--top { background: var(--color-brand); color: #fff; }
+.plan9__score { margin-left: auto; font-size: 1.5rem; font-weight: 800; color: var(--color-text-primary); }
+.plan9__score small { font-size: 0.75rem; font-weight: 500; color: var(--color-text-secondary); }
+.plan9__name { font-size: 1.1875rem; font-weight: 700; margin: 0; color: var(--color-text-primary); }
+.plan9__positioning { font-size: 0.9375rem; line-height: 1.65; margin: 0; color: var(--color-text-secondary); }
+.plan9__window { font-size: 0.8125rem; font-weight: 600; color: var(--color-brand); margin: 0; }
+
+.plan9__facts {
+  margin: 0; display: grid; gap: 10px;
+  padding: 14px; border-radius: 8px;
+  background: var(--color-bg-paper);
+}
+.plan9__fact { display: grid; grid-template-columns: 5.5rem 1fr; gap: 10px; align-items: start; }
+.plan9__fact dt { font-size: 0.8125rem; color: var(--color-text-secondary); font-weight: 600; }
+.plan9__fact dd { margin: 0; font-size: 0.875rem; color: var(--color-text-primary); }
+.plan9__fact-oj { font-weight: 700; }
+.plan9__risk { font-size: 0.8125rem; font-weight: 600; }
+.plan9__risk--low { color: var(--color-risk-low); }
+.plan9__risk--mid { color: var(--color-risk-estimate, var(--color-status-estimate)); }
+.plan9__risk--mid-high { color: var(--color-risk-med); }
+.plan9__risk--high { color: var(--color-risk-high); }
+
+.plan9__cost { display: grid; gap: 6px; }
+.plan9__cost-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.plan9__cost-label { font-size: 0.8125rem; color: var(--color-text-secondary); }
+.plan9__cost-value { font-size: 1.0625rem; font-weight: 700; color: var(--color-text-primary); }
+.plan9__cost-row--per .plan9__cost-label { font-size: 0.75rem; }
+.plan9__cost-note { font-size: 0.75rem; line-height: 1.6; color: var(--color-text-secondary); margin: 4px 0 0; }
+
+.plan9__rationale {
+  font-size: 0.875rem; line-height: 1.7; margin: 0;
+  padding: 12px 14px; border-radius: 8px;
+  background: var(--color-bg-paper);
+  border-left: 3px solid var(--color-brand);
+  color: var(--color-text-secondary);
+}
+.plan9__rationale strong { color: var(--color-text-primary); }
+
+.plan9__suits, .plan9__highlight { display: grid; gap: 4px; }
+.plan9__sub { font-size: 0.8125rem; font-weight: 700; margin: 0; color: var(--color-text-primary); letter-spacing: 0.02em; }
+.plan9__suits p, .plan9__highlight p { font-size: 0.875rem; line-height: 1.65; margin: 0; color: var(--color-text-secondary); }
+
+.plan9__toggle { border-top: 1px solid var(--color-border); padding-top: 12px; }
+.plan9__summary {
+  font-size: 0.875rem; font-weight: 600; cursor: pointer; color: var(--color-brand);
+  min-height: 44px; display: flex; align-items: center;
+}
+.plan9__summary:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 2px; }
+.plan9__days { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 12px; }
+.plan9__day {
+  padding: 12px 14px; border-radius: 8px;
+  background: var(--color-bg-paper);
+  border-left: 3px solid var(--color-border);
+}
+.plan9__day--buffer { border-left-color: var(--color-risk-estimate, var(--color-status-estimate)); }
+.plan9__day-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.plan9__day-no { font-size: 0.75rem; font-weight: 800; color: var(--color-text-primary); }
+.plan9__day-sea, .plan9__day-land, .plan9__day-buffer {
+  font-size: 0.6875rem; padding: 2px 8px; border-radius: 999px; font-weight: 600;
+}
+.plan9__day-sea { background: color-mix(in srgb, var(--color-risk-low) 14%, transparent); color: var(--color-risk-low); }
+.plan9__day-land { background: var(--color-bg-paper); color: var(--color-text-secondary); }
+.plan9__day-buffer { background: color-mix(in srgb, var(--color-status-estimate) 16%, transparent); color: var(--color-risk-estimate, var(--color-status-estimate)); }
+.plan9__day-title { font-size: 0.9375rem; font-weight: 700; margin: 0 0 4px; color: var(--color-text-primary); }
+.plan9__day-detail { font-size: 0.875rem; line-height: 1.6; margin: 0 0 6px; color: var(--color-text-secondary); }
+.plan9__day-meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 0.75rem; color: var(--color-text-secondary); }
+.plan9__day-cost, .plan9__day-park { font-weight: 600; }
+
+.plan9__sources { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.plan9__sources a { font-size: 0.75rem; color: var(--color-brand); }
+.plan9__sources a:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 2px; }
+
+.plan9__compare { margin-top: 28px; }
+.plan9__table { min-width: 560px; }
+.plan9__table td small { color: var(--color-text-secondary); font-size: 0.75rem; }
+.plan9__footnote { font-size: 0.875rem; line-height: 1.7; color: var(--color-text-secondary); margin: 24px 0 0; }
+.plan9__footnote strong { color: var(--color-text-primary); }
+
+@media (max-width: 720px) {
+  .plan9__list { grid-template-columns: 1fr; }
+  .plan9__fact { grid-template-columns: 1fr; gap: 2px; }
+  .plan9__cost-row { flex-direction: column; gap: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan9__toggle[open] .plan9__days { animation: none; }
+}

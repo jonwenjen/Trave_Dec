@@ -13,6 +13,7 @@ import './style.css';
 import { createKrabiSection } from './krabi-ui.js';
 import { createKrabiClimateSection } from './krabi-climate-ui.js';
 import { createKrabiRulesSection } from './krabi-rules-ui.js';
+import { createKrabiV3Section } from './krabi-v3-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -116,15 +117,26 @@ climate = createKrabiClimateSection({
 
 // 法規專區 + 六案重評：同樣讀取甲米區塊的人數以連動費用試算
 let rules = null;
+let plans9 = null;
 const onTravelers = () => {
   if (climate) climate.onTravelersChange();
   if (rules) rules.onTravelersChange();
+  if (plans9) plans9.refreshTravelers(krabi.getTravelers());
 };
 
 rules = createKrabiRulesSection({
   getEl: $,
   esc,
   getTravelers: () => krabi.getTravelers(),
+});
+
+// 九日三案：放寬天數與雙點進出，費用同樣跟著甲米區塊的人數走
+plans9 = createKrabiV3Section({
+  travelers: krabi.getTravelers(),
+  onTravelersChange: (n) => {
+    if (climate) climate.onTravelersChange();
+    if (rules) rules.onTravelersChange();
+  },
 });
 
 /* ═════════════════════════════════════════════════════════════════

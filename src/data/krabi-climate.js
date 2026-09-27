@@ -205,8 +205,8 @@ export const DATE_WINDOWS = [
 /** 欄位標籤（供比較表使用） */
 export const WINDOW_AXES = [
   { key: 'seaStability', label: '海況穩定度', betterWhen: 'high', hint: '風浪與船班取消的風險' },
-  { key: 'similanStatus', label: 'Similan 季節', betterWhen: 'either', hint: '季內 10/15–5/15' },
-  { key: 'songkranImpact', label: '宋干節影響', betterWhen: 'either', hint: '2027 推估 4/13–4/15' },
+  { key: 'similanStatus', label: 'Similan 季節', betterWhen: 'high', hint: '季內 10/15–5/15（季末僅計部分）' },
+  { key: 'songkranImpact', label: '宋干節影響', betterWhen: 'high', hint: '2027 推估 4/13–4/15（節後餘波次之）' },
   { key: 'crowdLevel', label: '人潮負擔', betterWhen: 'low', hint: '1 最少、5 最多' },
   { key: 'priceLevel', label: '價格水位', betterWhen: 'low', hint: '1 最便宜、5 最貴' },
   { key: 'heatLevel', label: '高溫負擔', betterWhen: 'low', hint: 'El Niño 加劇後的體感' },
