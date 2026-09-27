@@ -15,6 +15,7 @@ import { createKrabiClimateSection } from './krabi-climate-ui.js';
 import { createKrabiRulesSection } from './krabi-rules-ui.js';
 import { createKrabiV3Section } from './krabi-v3-ui.js';
 import { createPhuketSection } from './phuket-ui.js';
+import { createPricingSection } from './pricing-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -120,17 +121,24 @@ climate = createKrabiClimateSection({
 let rules = null;
 let plans9 = null;
 let phuket = null;
+let pricing = null;
 const onTravelers = () => {
   if (climate) climate.onTravelersChange();
   if (rules) rules.onTravelersChange();
   if (plans9) plans9.refreshTravelers(krabi.getTravelers());
   if (phuket) phuket.refreshTravelers(krabi.getTravelers());
+  if (pricing) pricing.refreshTravelers(krabi.getTravelers());
 };
 
 rules = createKrabiRulesSection({
   getEl: $,
   esc,
   getTravelers: () => krabi.getTravelers(),
+});
+
+// 2026 前季價格：十四案統一 7 天、統一價格基準，讓兩區可直接比較
+pricing = createPricingSection({
+  travelers: krabi.getTravelers(),
 });
 
 // Phuket 與離岸島嶼（桃園出發）：交通前提不同，獨立評分軸

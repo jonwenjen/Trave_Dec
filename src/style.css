@@ -2407,3 +2407,102 @@ tr.is-best-row th, tr.is-best-row td { background: var(--color-brand-light); }
   .pkt__h2h-row { grid-template-columns: 1fr; gap: 4px; }
   .pkt__fd-compare > div { grid-template-columns: 1fr; gap: 2px; }
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   2026 前季價格（十四案 7 天）
+   ═════════════════════════════════════════════════════════════════ */
+
+.price__block { margin-bottom: 36px; }
+.price__block-h {
+  font-size: 1.125rem; font-weight: 700; margin: 0 0 12px;
+  color: var(--color-text-primary);
+  padding-bottom: 8px; border-bottom: 2px solid var(--color-brand-light);
+}
+.price__block-lead { font-size: 0.9375rem; line-height: 1.75; margin: 0 0 16px; color: var(--color-text-secondary); }
+.price__block-lead strong { color: var(--color-text-primary); }
+.price__block-foot { font-size: 0.8125rem; line-height: 1.65; margin: 12px 0 0; color: var(--color-text-subtle); }
+.price__block-foot strong { color: var(--color-brand); }
+
+.price__flights { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.price__flight { background: var(--color-bg-paper); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-btn); padding: 16px 18px; }
+.price__flight-route { font-size: 0.9375rem; font-weight: 700; margin: 0 0 6px; color: var(--color-text-primary); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.price__flight-direct { font-size: 0.6875rem; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-pill); background: var(--color-bg-paper); color: var(--color-text-secondary); border: 1px solid var(--color-border); white-space: nowrap; }
+.price__flight-direct.is-direct { background: var(--color-brand); color: #fff; border-color: var(--color-brand); }
+.price__flight-cost { font-size: 1.125rem; font-weight: 800; margin: 0 0 6px; color: var(--color-brand); }
+.price__flight-cost small { font-size: 0.75rem; font-weight: 500; color: var(--color-text-subtle); }
+.price__flight-basis { font-size: 0.75rem; line-height: 1.6; margin: 0 0 6px; color: var(--color-text-secondary); }
+.price__flight-note { font-size: 0.75rem; line-height: 1.6; margin: 0 0 8px; color: var(--color-text-primary); }
+.price__flight-src { font-size: 0.75rem; color: var(--color-brand); }
+.price__flight-src:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 2px; }
+
+.price__compression {
+  background: var(--color-pine); color: var(--color-pine-text);
+  border-radius: var(--radius-card); padding: 22px 24px; margin-bottom: 34px;
+}
+.price__compression-h { font-size: 1.125rem; font-weight: 700; margin: 0 0 12px; }
+.price__compression-principle, .price__compression-honest, .price__compression-when {
+  font-size: 0.9375rem; line-height: 1.7; margin: 0 0 10px; color: var(--color-pine-text-sub);
+}
+.price__compression-honest { color: var(--color-brand-light); }
+.price__compression-count {
+  font-size: 0.9375rem; line-height: 1.7; margin: 14px 0 12px;
+  padding: 10px 12px; background: var(--color-pine-surface); border-radius: var(--radius-btn);
+}
+.price__compression-count strong { color: #fff; }
+.price__compression-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+.price__compression-item {
+  padding: 13px 15px; border-radius: var(--radius-btn);
+  background: var(--color-pine-surface); border-left: 3px solid var(--color-pine-light);
+}
+.price__compression-item.is-not-rec { border-left-color: var(--color-status-estimate); }
+.price__compression-item h4 { font-size: 0.875rem; font-weight: 700; margin: 0 0 5px; }
+.price__compression-item p { font-size: 0.8125rem; line-height: 1.65; margin: 0 0 4px; color: var(--color-pine-text-sub); }
+.price__compression-from { color: var(--color-brand-light) !important; font-weight: 600; }
+.price__compression-alt { color: #fff !important; font-weight: 700; }
+
+.price__table { min-width: 940px; }
+.price__table th[scope=row] { display: table-cell; }
+.price__tag {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 24px; padding: 0 7px; border-radius: var(--radius-btn);
+  font-size: 0.75rem; font-weight: 800; color: #fff; margin-right: 6px; flex-shrink: 0;
+}
+.price__tag--krabi { background: var(--color-pine); }
+.price__tag--phuket { background: var(--color-brand); }
+.price__name { font-weight: 600; }
+.price__flag {
+  display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: var(--radius-pill);
+  font-size: 0.6875rem; font-weight: 700;
+  background: color-mix(in srgb, var(--color-status-estimate) 20%, transparent);
+  color: var(--color-status-estimate);
+}
+.price__total { font-weight: 800; color: var(--color-text-primary); white-space: nowrap; }
+.is-free { color: var(--color-risk-low); font-weight: 700; }
+
+.price__region-compare { display: grid; gap: 12px; }
+.price__region-verdict { font-size: 0.9375rem; line-height: 1.75; margin: 0; padding: 14px 16px; background: var(--color-brand-light); border-radius: var(--radius-btn); color: var(--color-text-primary); }
+.price__region-verdict strong { color: var(--color-brand); }
+.price__region-caveat { font-size: 0.875rem; line-height: 1.7; margin: 0; color: var(--color-text-secondary); }
+
+.price__basis { margin: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.price__basis > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 13px; background: var(--color-bg-paper); border-radius: var(--radius-btn); }
+.price__basis dt { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-primary); }
+.price__basis dd { margin: 0; font-size: 0.8125rem; color: var(--color-text-secondary); white-space: nowrap; font-weight: 600; }
+
+.price__caveat {
+  background: var(--color-bg-paper); border: 1px solid var(--color-status-estimate);
+  border-radius: var(--radius-card); padding: 20px 22px; margin-bottom: 26px;
+}
+.price__caveat-h { font-size: 1rem; font-weight: 700; margin: 0 0 12px; color: var(--color-text-primary); }
+.price__caveat-list { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 5px; }
+.price__caveat-list li { font-size: 0.875rem; line-height: 1.6; color: var(--color-text-secondary); }
+.price__caveat-assume { font-size: 0.8125rem; line-height: 1.65; margin: 0; color: var(--color-text-subtle); }
+.price__caveat-assume strong { color: var(--color-text-primary); }
+.price__footnote { font-size: 0.875rem; line-height: 1.75; color: var(--color-text-secondary); margin: 0; }
+.price__footnote strong { color: var(--color-text-primary); }
+
+@media (max-width: 720px) {
+  .price__flights, .price__basis { grid-template-columns: 1fr; }
+  .price__basis > div { flex-direction: column; gap: 2px; }
+}
