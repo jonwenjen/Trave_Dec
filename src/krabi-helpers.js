@@ -633,7 +633,11 @@ export function planCoversEmeraldCave(plan) {
 }
 
 export function planRequiresFerry(plan) {
-  return Boolean(plan && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('koh-lanta'));
+  if (!plan) return false;
+  if (Array.isArray(plan.marineAreas) && plan.marineAreas.includes('koh-lanta')) return true;
+  // 普吉方案：住 Koh Yao Noi 需以快艇往返碼頭，性質等同渡輪轉移
+  if (Array.isArray(plan.marineAreas) && plan.marineAreas.includes('koh-yao')) return true;
+  return false;
 }
 
 /**
@@ -644,9 +648,13 @@ export function planRequiresFerry(plan) {
 export function planRequiresLandTransfer(plan) {
   if (!plan) return false;
   const base = String(plan.base || '');
-  // 基地在甲米／Ao Nang 且要下 Trang → 需陸路
+  const areas = Array.isArray(plan.marineAreas) ? plan.marineAreas : [];
+  // 甲米：基地在甲米／Ao Nang 且要下 Trang → 需陸路
   const basedInKrabi = /Ao Nang|Krabi|甲米/i.test(base) && !/^Trang/.test(base.trim());
-  return basedInKrabi && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('trang');
+  if (basedInKrabi && areas.includes('trang')) return true;
+  // 普吉：住普吉但要去 Khao Lak 出 Similan → 需陸路南下 2.5–3 小時
+  if (/普吉|Phuket/i.test(base) && areas.includes('similan')) return true;
+  return false;
 }
 
 /** 海上天數：由 days 旗標推導，不另存宣告欄位 */

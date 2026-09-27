@@ -14,6 +14,7 @@ import { createKrabiSection } from './krabi-ui.js';
 import { createKrabiClimateSection } from './krabi-climate-ui.js';
 import { createKrabiRulesSection } from './krabi-rules-ui.js';
 import { createKrabiV3Section } from './krabi-v3-ui.js';
+import { createPhuketSection } from './phuket-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -118,16 +119,23 @@ climate = createKrabiClimateSection({
 // 法規專區 + 六案重評：同樣讀取甲米區塊的人數以連動費用試算
 let rules = null;
 let plans9 = null;
+let phuket = null;
 const onTravelers = () => {
   if (climate) climate.onTravelersChange();
   if (rules) rules.onTravelersChange();
   if (plans9) plans9.refreshTravelers(krabi.getTravelers());
+  if (phuket) phuket.refreshTravelers(krabi.getTravelers());
 };
 
 rules = createKrabiRulesSection({
   getEl: $,
   esc,
   getTravelers: () => krabi.getTravelers(),
+});
+
+// Phuket 與離岸島嶼（桃園出發）：交通前提不同，獨立評分軸
+phuket = createPhuketSection({
+  travelers: krabi.getTravelers(),
 });
 
 // 九日三案：放寬天數與雙點進出，費用同樣跟著甲米區塊的人數走

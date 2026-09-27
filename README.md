@@ -6,13 +6,40 @@
 
 ## 現在能做什麼
 
-- **九種方案**並排比較 — 7 天六案 ＋ 9 天三案，點擊展開完整逐日行程
+- **十四種方案**並排比較 — 甲米 7 天六案 ＋ 9 天三案，普吉另 5 案
+- **改由桃園出發**的完整重評：TPE→HKT 直飛 4h25m vs TPE→KBV 經曼谷 13–16h
 - **2025 潛水法規專區** — 泰國自 2025/4/22 起強制浮潛穿救生衣等全國性法規
 - **2026/27 超級聖嬰評估**與三個日期窗口比較
 - **珊瑚保護五禁**、跨方案法規檢查清單（可勾選並保存本機）
 - 費用試算與人數連動、離線可用、深色模式
 
-### 九種方案
+### 普吉與離岸島嶼（`#phuket`）
+
+**為什麼有這個區塊**：桃園出發時，普吉與甲米的交通成本差距是結構性的。
+TPE→KBV 無直飛（13–16h，必經曼谷），TPE→HKT 有直飛（4h25m）——差距約 **10 小時**。
+這是以高雄為前提時看不到的面向。
+
+**但有硬約束**：TPE→HKT 每週僅約 **2 班**，不是每日班表。日期必須配合航班，
+所以每一案的「日期前提」都寫在卡片上。2027/04 班表尚未公布。
+
+| 案 | 名稱 | 強項 |
+|---|---|---|
+| P1 | 七日・普吉經典（直飛最短） | 移動負擔最低，基地不變 |
+| P2 | 七日・Koh Yao 秘境駐紮 | 秘境 ＋ 費用親和，**免公園費** |
+| P3 | 八日・自由潛水專程（拿 AIDA 證照） | 普吉唯一無可取代的一項 |
+| P4 | 九日・普吉進、Similan 出（交通最省） | 同時吃到 Racha 20–30m 與 Similan |
+| P5 | 八日・全離岸島嶼（涵蓋最廣） | 5 個海域，且無一需超過 90 分船程 |
+
+**兩個必須知道的點**：
+
+1. **Similan 從普吉出發是常見誤區** — 除非飯店主打「普吉出發快艇」，
+   否則業者會用車把你載回 Thap Lamu 碼頭，等於多花 2 小時車程換同一趟船。
+   Similan 本質是 Khao Lak 行程，而 Khao Lak 離甲米機場只要 1.5 小時。
+2. **自由潛水普吉反而更強** — SSS Phuket 是島上唯一四系統中心（AIDA／SSI／
+   Molchanovs／PADI），AIDA 1 僅需 1–2 天；Racha Noi 能見度 20–30m 是共識訓練點。
+   相較甲米／蘭塔的導潛日（同時段上限 2 人），這裡給的是完整教學與認證。
+
+### 甲米九案
 
 **7 天六案**（`2027-04-06 – 04-12`）：
 
@@ -73,7 +100,7 @@
 
 - **Vanilla JS + Vite** — 無框架、無 runtime 依賴
 - **PWA** — 離線可用、深色模式、service worker
-- **125 個測試**（`node --test`）
+- **157 個測試**（`node --test`）
 - mobile-first、熱區 ≥44px、清楚 focus、`prefers-reduced-motion`
 
 ### 評分系統的兩個修正
@@ -88,7 +115,7 @@
 ```bash
 npm install
 npm run dev      # 本機開發（Vite）
-npm test         # Node 內建測試（125 個）
+npm test         # Node 內建測試（157 個）
 npm run build    # 產出 dist/
 npm run preview  # 預覽建置結果
 ```
@@ -105,20 +132,25 @@ src/
   data/krabi-regulations.js  2025 潛水法規條款、禁止事項、AIDA 對照
   data/krabi-plans-v2.js   六案重評資料、海洋區對照、決策樹
   data/krabi-plans-v3.js   九日三案（放寬天數 ＋ 雙點進出）
+  data/phuket.js           普吉五案、桃園/高雄出發前提、離岸礁、公園、自由潛水、權衡
   krabi-helpers.js         純函式（費用、風險、評分軸、法規負擔）
   krabi-helpers-v3.js      九案合併評分（新增 duration / openJaw 軸）
   krabi-ui.js              5 月區塊
   krabi-climate-ui.js      ENSO 與日期窗口
   krabi-rules-ui.js        法規專區與六案重評
   krabi-v3-ui.js           九日三案
+  phuket-helpers.js        普吉評分軸、交通省時計算、比較矩陣
+  phuket-ui.js             普吉區塊
   main.js                  進入點：主題、離線徽章、SW 註冊、各區塊初始化
 test/
   krabi-helpers.test.js    5 月與共用 helper
   krabi-climate.test.js    ENSO 與日期窗口
   krabi-v2.test.js         六案、法規、海洋區
   krabi-v3.test.js         九日三案與 v3 前提驗證
+  phuket.test.js           普吉五案、出發前提、離岸礁與權衡資料
 docs/
   krabi-all-plans-reassessment.md      全部方案重評（含評分 bug 記錄）
+  phuket-offshore-evaluation.md        普吉與離岸島嶼評估（研究底稿）
   krabi-lifevest-law-and-full-coverage-plan.md  救生衣法規與全海域方案
   krabi-freediving-research.md         自由潛水點位、導潛、包船
 ```
