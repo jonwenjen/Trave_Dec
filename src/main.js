@@ -1,34 +1,19 @@
 /**
- * Trave_Dec — 泰國甲米跳島浮潛 2027/05
+ * Trave_Dec — 2027/03/29 – 04/05 普吉與安達曼海重評
  *
- * 單一趟旅程的規劃頁。進入點只負責三件事：
+ * 單一趟旅程的規劃頁。進入點只負責四件事：
  *  1. 主題（深／淺）切換與持久化
  *  2. 離線狀態徽章
- *  3. 把控制權交給甲米區塊（src/krabi-ui.js）
+ *  3. 人數調整（驅動所有費用試算）
+ *  4. 把控制權交給重評區塊（src/ui-reeval.js）
  *
- * 網站刻意不連接即時天氣、海況或船班 API：2027 年 5 月的實際資料尚未公布。
+ * 網站刻意不連接即時天氣、海況或船班 API：2027 年 3 月的實際資料尚未公布。
  */
 
 import './style.css';
-import { createKrabiSection } from './krabi-ui.js';
-import { createKrabiClimateSection } from './krabi-climate-ui.js';
-import { createKrabiRulesSection } from './krabi-rules-ui.js';
-import { createKrabiV3Section } from './krabi-v3-ui.js';
-import { createPhuketSection } from './phuket-ui.js';
-import { createPricingSection } from './pricing-ui.js';
-import { createFareStructureSection } from './fare-structure-ui.js';
+import { createReevalSection } from './ui-reeval.js';
 
 const $ = (id) => document.getElementById(id);
-
-/** HTML 跳脫保護 */
-function esc(value) {
-  return String(value == null ? '' : value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 /* ═════════════════════════════════════════════════════════════════
    Toast
@@ -64,7 +49,6 @@ function initTheme() {
   } catch {
     /* 無痕模式：退回系統偏好 */
   }
-
   if (saved === 'dark' || saved === 'light') {
     document.documentElement.setAttribute('data-theme', saved);
   } else {
@@ -99,65 +83,53 @@ function renderOfflineBadge() {
 }
 
 /* ═════════════════════════════════════════════════════════════════
-   甲米區塊
-   ═════════════════════════════════════════════════════════════════ */
+   人數（驅動所有費用試算）
+   ═════════════════════════════════════════════════════════ */
 
-// 4 月／ENSO 區塊需要讀取甲米區塊的人數，並在人數變動時重算費用試算
-let climate = null;
-const krabi = createKrabiSection({
-  getEl: $,
-  esc,
-  toast,
-  onTravelersChange: () => onTravelers(),
-});
+const TRAVELERS_KEY = 'trave_dec_travelers';
+let travelers = 2;
 
-climate = createKrabiClimateSection({
-  getEl: $,
-  esc,
-  toast,
-  getTravelers: () => krabi.getTravelers(),
-});
+function loadTravelers() {
+  try {
+    const v = Number(localStorage.getItem(TRAVELERS_KEY));
+    if (Number.isInteger(v) && v >= 1 && v <= 20) travelers = v;
+  } catch {
+    /* 保留預設 */
+  }
+}
 
-// 法規專區 + 六案重評：同樣讀取甲米區塊的人數以連動費用試算
-let rules = null;
-let plans9 = null;
-let phuket = null;
-let pricing = null;
-const onTravelers = () => {
-  if (climate) climate.onTravelersChange();
-  if (rules) rules.onTravelersChange();
-  if (plans9) plans9.refreshTravelers(krabi.getTravelers());
-  if (phuket) phuket.refreshTravelers(krabi.getTravelers());
-  if (pricing) pricing.refreshTravelers(krabi.getTravelers());
+function saveTravelers() {
+  try {
+    localStorage.setItem(TRAVELERS_KEY, String(travelers));
+  } catch {
+    /* 儲存失敗不影響試算 */
+  }
+}
+
+let reeval = null;
+const onTravelersChange = () => {
+  if (reeval) reeval.refreshTravelers(travelers);
 };
 
-rules = createKrabiRulesSection({
-  getEl: $,
-  esc,
-  getTravelers: () => krabi.getTravelers(),
-});
+function renderTravelersInput() {
+  const input = $('travelers-input');
+  const out = $('travelers-out');
+  if (input) input.value = String(travelers);
+  if (out) out.textContent = `${travelers} 人`;
+}
 
-// 機票結構：來回 vs 兩張單程 vs 混搭（含目標窗口班表衝突檢查）
-createFareStructureSection();
-
-// 2026 前季價格：十四案統一 7 天、統一價格基準，讓兩區可直接比較
-pricing = createPricingSection({
-  travelers: krabi.getTravelers(),
-});
-
-// Phuket 與離岸島嶼（桃園出發）：交通前提不同，獨立評分軸
-phuket = createPhuketSection({
-  travelers: krabi.getTravelers(),
-});
-
-// 九日三案：放寬天數與雙點進出，費用同樣跟著甲米區塊的人數走
-plans9 = createKrabiV3Section({
-  travelers: krabi.getTravelers(),
-  onTravelersChange: (n) => {
-    if (climate) climate.onTravelersChange();
-    if (rules) rules.onTravelersChange();
-  },
-});
+function wireTravelers() {
+  const input = $('travelers-input');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const v = Number(input.value);
+    if (!Number.isInteger(v) || v < 1 || v > 20) return;
+    travelers = v;
+    saveTravelers();
+    renderTravelersInput();
+    onTravelersChange();
+  });
+}
 
 /* ═════════════════════════════════════════════════════════════════
    啟動
@@ -166,19 +138,18 @@ plans9 = createKrabiV3Section({
 function init() {
   initTheme();
   renderOfflineBadge();
+  loadTravelers();
 
   $('theme-toggle')?.addEventListener('click', toggleTheme);
   window.addEventListener('online', renderOfflineBadge);
   window.addEventListener('offline', renderOfflineBadge);
 
-  krabi.render();
-  krabi.wire();
-  climate.render();
-  climate.wire();
-  rules.render();
-  rules.wire();
+  renderTravelersInput();
+  wireTravelers();
 
-  // 註冊 Service Worker（離線支援核心內容）
+  reeval = createReevalSection({ travelers });
+  onTravelersChange();
+
   if ('serviceWorker' in navigator && import.meta.env && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
