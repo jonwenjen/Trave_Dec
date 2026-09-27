@@ -1,11 +1,44 @@
 # Trave_Dec — implementation brief
 
 ## Product
-A single-trip planning site for **泰國甲米跳島浮潛 2027/05** (Krabi, Thailand island-hopping and
-snorkeling, 7 days, departing 高雄 KHH). The site's job is to let a group **compare five concrete
+A single-trip planning site for **泰國甲米跳島浮潛 2027/04** (Krabi, Thailand island-hopping and
+snorkeling, 7 days, departing 高雄 KHH). The site's job is to let a group **compare six concrete
 plans side by side** and choose one on evidence — not to sell them a generic "top 10 islands" list.
 
+**The date is 2027/04, not 2027/05** — see "Why April" below. The May plans remain only as a
+documented reassessment, not as live options.
+
 Interface language: Traditional Chinese, with island names kept in English (Koh Rok, Phi Phi…).
+
+## Why April, and why six plans
+The 2026/27 season is a **super El Niño** (NOAA: >90% chance of "very strong" through
+2027-01, persisting to 2027-03/05). This inverts the usual assumption — rain is likely *below*
+average, so May's monsoon-transition risk shrinks while **heat becomes the hazard**. The
+reliable TMD figure is **April temperatures +1.5–2.5°C**, heat index up to 50–54°C.
+
+April wins on structure, not just weather: the Ao Nang→Koh Lanta ferry **runs in April** (it
+does not May–October), and **Similan is in season** (10/15–5/15). Both of May's disqualifiers
+disappear. April 13–15 is Songkran, so the recommended window is **4/6–4/12** to avoid it.
+
+The five May plans and five April plans were then **merged into six** once the 2025 Thai diving
+regulations and freediving feasibility were known — those findings changed the feasible set.
+See `docs/krabi-all-plans-reassessment.md`.
+
+## 2025 diving regulations — legally binding, easy to miss
+Effective **2025-04-22** nationwide (MNRE, *Measures for the Protection of Coral Reef Resources
+from Diving Tourism Activities, B.E. 2568*), enforceable under the Marine and Coastal Resources
+Management Act, in force at least 5 years. This is law, not operator advice, and pre-2025 guides
+almost never mention it:
+- Life vests **mandatory for snorkelers** unless holding a recognised freediving/scuba cert.
+  AIDA 2 exempts; **AIDA 1 does not** (it is a one-day intro, not a full certification).
+- Snorkelers must be **with a qualified operator** — this is what makes "just hire your own
+  boat at the pier" a grey area. Recommend licensed operators, not informal charters.
+- 2 m clearance above reef; 1 supervisor per 20 snorkelers; briefing required before activity.
+- **Underwater cameras** need Advanced Open Water+ or 40 logged dives. A freediving cert does
+  not unlock photography.
+- "Coral reef area" includes **dead** coral, gorgonian fans and artificial reefs — so it covers
+  effectively everywhere we snorkel.
+- Operator penalties reach ฿200,000.
 
 ## Core surface
 One page, one trip, four things:

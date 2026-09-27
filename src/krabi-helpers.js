@@ -575,3 +575,308 @@ export function totalParkFeeByPlan(plan) {
   if (!plan || !Array.isArray(plan.days)) return 0;
   return plan.days.reduce((sum, d) => sum + (Number(d && d.parkFeeTHB) || 0), 0);
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   六案重評 — 純函式
+   資料見 src/data/krabi-plans-v2.js 與 src/data/krabi-regulations.js
+   ═════════════════════════════════════════════════════════════════ */
+
+import {
+  KRABI_PLANS_V2,
+  MARINE_AREAS,
+  EXCLUDED_AREAS,
+  SIX_PLAN_AXES,
+  PLAN_LEGAL_NOTES,
+} from './data/krabi-plans-v2.js';
+import { COMPLIANCE_CHECKLIST } from './data/krabi-regulations.js';
+
+export {
+  KRABI_PLANS_V2,
+  MARINE_AREAS,
+  EXCLUDED_AREAS,
+  SIX_PLAN_AXES,
+  PLAN_LEGAL_NOTES,
+};
+
+/** 依 id 取得海洋區；未知 id 安全降級為 null */
+export function marineAreaById(id) {
+  if (!id) return null;
+  return MARINE_AREAS.find((a) => a.id === id) || null;
+}
+
+/** 方案涵蓋的海洋區名稱（中英並列） */
+export function planMarineAreaIds(plan) {
+  if (!plan || !Array.isArray(plan.marineAreas)) return [];
+  return plan.marineAreas
+    .map((id) => marineAreaById(id))
+    .filter(Boolean)
+    .map((a) => `${a.zh}（${a.name}）`);
+}
+
+export function planCoversSimilan(plan) {
+  return Boolean(plan && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('similan'));
+}
+
+export function planCoversEmeraldCave(plan) {
+  return Boolean(plan && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('trang'));
+}
+
+export function planRequiresFerry(plan) {
+  return Boolean(plan && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('koh-lanta'));
+}
+
+/**
+ * 是否需要陸路轉移。
+ * 注意：涵蓋 Trang 不等於需要陸路——直飛 Trang（TST）的方案從 Trang 直接出海，
+ * 只有先飛甲米再南下者才需陸路。以基地位置判斷，而非以海域判斷。
+ */
+export function planRequiresLandTransfer(plan) {
+  if (!plan) return false;
+  const base = String(plan.base || '');
+  // 基地在甲米／Ao Nang 且要下 Trang → 需陸路
+  const basedInKrabi = /Ao Nang|Krabi|甲米/i.test(base) && !/^Trang/.test(base.trim());
+  return basedInKrabi && Array.isArray(plan.marineAreas) && plan.marineAreas.includes('trang');
+}
+
+/** 海上天數：由 days 旗標推導，不另存宣告欄位 */
+export function planSeaDayCountV2(plan) {
+  if (!plan || !Array.isArray(plan.days)) return 0;
+  return plan.days.filter((d) => d && d.seaDay && !d.isBuffer).length;
+}
+
+/** 公園費合計（由 days 的 parkFeeTHB 推導） */
+export function planParkFeeTotalV2(plan) {
+  if (!plan || !Array.isArray(plan.days)) return 0;
+  return plan.days.reduce((sum, d) => sum + (Number(d && d.parkFeeTHB) || 0), 0);
+}
+
+function normalize(v) {
+  const n = Number(v) || 0;
+  return (Math.max(1, Math.min(5, n)) - 1) / 4;
+}
+
+/**
+ * 自由潛水可行性 0–5。
+ * 住島上（能反覆練習）與教練推薦點位是主要依據。
+ */
+export function planFreediveScore(plan) {
+  if (!plan) return 0;
+  const text = JSON.stringify(plan);
+  let score = 1;
+  if (plan.marineAreas.includes('koh-lanta')) score += 2; // 住島上可反覆練習
+  if (text.includes('Koh Haa') || text.includes('Koh Bida')) score += 1; // 教練推薦點位
+  if (text.includes('導潛')) score += 1;
+  return Math.min(5, score);
+}
+
+/**
+ * 法規負擔 0–5（數字越高代表越麻煩）。
+ * 涵蓋公園越多、需確認的額外規定越多。
+ */
+export function planLegalBurden(plan) {
+  if (!plan) return 0;
+  const areas = Array.isArray(plan.marineAreas) ? plan.marineAreas.length : 0;
+  let burden = areas;
+  if (planRequiresLandTransfer(plan)) burden += 1; // 跨公園轉移
+  if (planCoversEmeraldCave(plan)) burden += 0.5; // 潮汐與 dive light
+  return Math.min(5, burden);
+}
+
+/** 體力友善 1–5：5 = 零移動 */
+export function planEffortScore(plan) {
+  if (!plan) return 0;
+  let load = 0;
+  if (planRequiresLandTransfer(plan)) load += 2;
+  if (planRequiresFerry(plan)) load += 1;
+  const sea = planSeaDayCountV2(plan);
+  if (sea >= 5) load += 1;
+  return Math.max(1, 5 - load);
+}
+
+/** 能見度機會 1–5：含 Similan 或 Koh Rok 加分 */
+export function planVisibilityScore(plan) {
+  if (!plan) return 0;
+  const text = JSON.stringify(plan);
+  let score = 2;
+  if (planCoversSimilan(plan)) score += 2;
+  if (text.includes('Koh Rok')) score += 1;
+  return Math.min(5, score);
+}
+
+/** 人少程度 1–5：秘境加分、團客多的點位扣分 */
+export function planSecrecyScore(plan) {
+  if (!plan) return 0;
+  const text = JSON.stringify(plan);
+  let score = 3;
+  if (planCoversEmeraldCave(plan)) score += 2;
+  if (text.includes('Koh Yawabon')) score += 1;
+  if (plan.marineAreas.includes('phi-phi')) score -= 2;
+  if (plan.marineAreas.length >= 4) score -= 1;
+  return Math.max(1, Math.min(5, score));
+}
+
+/** 成本效率 1–5：費用越低越高 */
+export function planCostEfficiency(plan) {
+  if (!plan || !plan.estimateTHB) return 0;
+  const mid = (plan.estimateTHB.min + plan.estimateTHB.max) / 2;
+  // 10,250 = 5 分；15,000 = 1 分（線性對映後夾在 1–5）
+  const score = 5 - ((mid - 10250) / (15000 - 10250)) * 4;
+  return Math.max(1, Math.min(5, score));
+}
+
+/** 法規輕鬆度 1–5：與 legalBurden 相反 */
+export function planLegalEase(plan) {
+  if (!plan) return 0;
+  return Math.max(1, Math.min(5, 6 - planLegalBurden(plan)));
+}
+
+function axisRawValue(plan, key) {
+  switch (key) {
+    case 'marineAreas': return Array.isArray(plan.marineAreas) ? plan.marineAreas.length : 0;
+    case 'seaDays': return planSeaDayCountV2(plan);
+    case 'visibility': return planVisibilityScore(plan);
+    case 'secrecy': return planSecrecyScore(plan);
+    case 'effort': return planEffortScore(plan);
+    case 'legalEase': return planLegalEase(plan);
+    case 'freedive': return planFreediveScore(plan);
+    case 'cost': return planCostEfficiency(plan);
+    default: return 0;
+  }
+}
+
+function axisDisplayV2(plan, key) {
+  switch (key) {
+    case 'marineAreas': return `${(plan.marineAreas || []).length} 區`;
+    case 'seaDays': return `${planSeaDayCountV2(plan)} 天`;
+    case 'visibility': return `${planVisibilityScore(plan)} / 5`;
+    case 'secrecy': return `${planSecrecyScore(plan)} / 5`;
+    case 'effort': return `${planEffortScore(plan)} / 5`;
+    case 'legalEase': return `${planLegalEase(plan)} / 5`;
+    case 'freedive': return `${planFreediveScore(plan)} / 5`;
+    case 'cost': return `฿${plan.estimateTHB.min.toLocaleString('en-US')}–${plan.estimateTHB.max.toLocaleString('en-US')}`;
+    default: return '—';
+  }
+}
+
+/**
+ * 六案綜合評分：每軸轉 0–100 後取平均。
+ * @returns {{total:number, byAxis:Object<string,number>}}
+ */
+export function planScoreTotal(plan, axes) {
+  if (!plan) return { total: 0, byAxis: {} };
+  const list = axes || SIX_PLAN_AXES;
+  const byAxis = {};
+  let sum = 0;
+  for (const axis of list) {
+    const v = Math.round(normalize(axisRawValue(plan, axis.key)) * 100);
+    byAxis[axis.key] = v;
+    sum += v;
+  }
+  return { total: list.length ? Math.round(sum / list.length) : 0, byAxis };
+}
+
+/**
+ * 六案比較矩陣，每軸標出最佳方案。
+ * @returns {Array<{key,label,hint?,betterWhen,best:?string,values:Array<{tag,value,display}>}>}
+ */
+export function comparePlanV2(plans, axes) {
+  const list = plans && plans.length ? plans : KRABI_PLANS_V2;
+  const axisList = axes || SIX_PLAN_AXES;
+
+  return axisList.map((axis) => {
+    const values = list.map((p) => ({
+      tag: p.tag,
+      value: axisRawValue(p, axis.key),
+      display: axisDisplayV2(p, axis.key),
+    }));
+    let best = null;
+    if (axis.betterWhen !== 'either' && values.length) {
+      let pick = values[0];
+      for (const v of values.slice(1)) {
+        if (axis.betterWhen === 'high' ? v.value > pick.value : v.value < pick.value) pick = v;
+      }
+      best = pick ? pick.tag : null;
+    }
+    return { key: axis.key, label: axis.label, hint: axis.hint, betterWhen: axis.betterWhen, best, values };
+  });
+}
+
+/** 單一軸的最佳方案 tag；either 軸回傳 null */
+export function bestPlanForAxis(key, axes) {
+  const axis = (axes || SIX_PLAN_AXES).find((a) => a.key === key);
+  if (!axis || axis.betterWhen === 'either') return null;
+  let best = null;
+  for (const p of KRABI_PLANS_V2) {
+    if (!best) { best = p; continue; }
+    const a = axisRawValue(p, key);
+    const b = axisRawValue(best, key);
+    if (axis.betterWhen === 'high' ? a > b : a < b) best = p;
+  }
+  return best ? best.tag : null;
+}
+
+/**
+ * 依方案內容產生適用的法規檢查項。
+ * 共通項（法規要求）＋ 依涵蓋海域追加的項目。
+ */
+export function checkPlanCompliance(plan) {
+  if (!plan) return { items: [], passRate: 0 };
+  const areas = Array.isArray(plan.marineAreas) ? plan.marineAreas : [];
+  const items = COMPLIANCE_CHECKLIST.filter((c) => {
+    if (c.key === 'tide-check') return areas.includes('trang');
+    if (c.key === 'dive-light') return areas.includes('trang');
+    return true;
+  }).map((c) => ({ ...c }));
+
+  // 涵蓋公園數直接影響法規確認量
+  if (areas.length > 1) {
+    items.push({
+      key: 'multi-park-rules',
+      phase: '下水前',
+      label: `確認 ${areas.length} 個公園各自的額外規定`,
+      detail: areas.map((id) => (marineAreaById(id) || {}).authority).filter(Boolean).join('；'),
+    });
+  }
+  return { items, passRate: compliancePassRate(plan) };
+}
+
+/** 合規準備度：以涵蓋公園數推估，公園少者較輕鬆（0–1） */
+export function compliancePassRate(plan) {
+  if (!plan) return 0;
+  const areas = Array.isArray(plan.marineAreas) ? plan.marineAreas.length : 0;
+  if (areas === 0) return 0;
+  return Math.round((1 / (1 + (areas - 1) * 0.35)) * 100) / 100;
+}
+
+/** 六案費用換算為 TWD（不含機票） */
+export function planCostTwdV2(plan) {
+  if (!plan || !plan.estimateTHB) return null;
+  const rate = THB_TO_TWD_ASSUMED;
+  return {
+    min: Math.round(plan.estimateTHB.min * rate),
+    max: Math.round(plan.estimateTHB.max * rate),
+    rate,
+    rateIsAssumption: true,
+  };
+}
+
+/** 六案團費試算（每人 × 人數） */
+export function estimateGroupTotalTwdV2(plan, travelers, opts = {}) {
+  const per = planCostTwdV2(plan);
+  if (!per) return null;
+  const n = Math.max(1, Number(travelers) || 1);
+  const includeFlight = Boolean(opts.includeFlight);
+  const flight = includeFlight ? KRABI_FLIGHT_ESTIMATE : null;
+  return {
+    travelers: n,
+    includeFlight,
+    perPerson: {
+      min: per.min + (flight ? flight.min : 0),
+      max: per.max + (flight ? flight.max : 0),
+    },
+    min: (per.min + (flight ? flight.min : 0)) * n,
+    max: (per.max + (flight ? flight.max : 0)) * n,
+    rate: per.rate,
+  };
+}

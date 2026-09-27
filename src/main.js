@@ -12,6 +12,7 @@
 import './style.css';
 import { createKrabiSection } from './krabi-ui.js';
 import { createKrabiClimateSection } from './krabi-climate-ui.js';
+import { createKrabiRulesSection } from './krabi-rules-ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -103,13 +104,26 @@ const krabi = createKrabiSection({
   getEl: $,
   esc,
   toast,
-  onTravelersChange: () => climate && climate.onTravelersChange(),
+  onTravelersChange: () => onTravelers(),
 });
 
 climate = createKrabiClimateSection({
   getEl: $,
   esc,
   toast,
+  getTravelers: () => krabi.getTravelers(),
+});
+
+// 法規專區 + 六案重評：同樣讀取甲米區塊的人數以連動費用試算
+let rules = null;
+const onTravelers = () => {
+  if (climate) climate.onTravelersChange();
+  if (rules) rules.onTravelersChange();
+};
+
+rules = createKrabiRulesSection({
+  getEl: $,
+  esc,
   getTravelers: () => krabi.getTravelers(),
 });
 
@@ -129,6 +143,8 @@ function init() {
   krabi.wire();
   climate.render();
   climate.wire();
+  rules.render();
+  rules.wire();
 
   // 註冊 Service Worker（離線支援核心內容）
   if ('serviceWorker' in navigator && import.meta.env && import.meta.env.PROD) {

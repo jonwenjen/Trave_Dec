@@ -31,6 +31,8 @@
         <nav class="top-nav__menu" aria-label="主要章節導覽">
           <a href="#enso" class="top-nav__link" data-nav-target="enso">ENSO 評估</a>
           <a href="#windows" class="top-nav__link" data-nav-target="windows">日期並列</a>
+          <a href="#rules" class="top-nav__link" data-nav-target="rules">法規</a>
+          <a href="#plans6" class="top-nav__link" data-nav-target="plans6">六案</a>
           <a href="#krabi" class="top-nav__link" data-nav-target="krabi">5 月方案</a>
           <a href="#krabi-april" class="top-nav__link" data-nav-target="krabi-april">4 月方案</a>
           <a href="#krabi-plan-list" class="top-nav__link" data-nav-target="krabi-plan-list">方案</a>
@@ -236,6 +238,135 @@
       </div>
     </section>
 
+
+
+    <!-- ────────── 2025 潛水法規專區 ────────── -->
+    <section class="section section--rules" id="rules" aria-labelledby="rules-heading">
+      <div class="section-container">
+        <div class="section-header section-header--editorial">
+          <span class="section-eyebrow">In Effect Since 2025-04-22</span>
+          <h2 class="section-title" id="rules-heading">泰國浮潛法規：這條改變了「自行包船」與「自己拍照」</h2>
+          <p class="section-desc">
+            2025 年 4 月 22 日起，泰國自然資源與環境部的新措施全國生效。
+            這不是旅行社的建議，而是法律義務——2025 年之前的攻略幾乎都沒提這條，
+            而它直接決定了哪些安排做得到、哪些做不到。
+          </p>
+        </div>
+
+        <div class="rule-header" id="rule-header"></div>
+
+        <div class="rule-clauses" id="rule-clauses"></div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">珊瑚礁區的定義比想像的寬</h3>
+          <p class="rule-callout" id="rule-coral-definition"></p>
+        </div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">珊瑚礁區內的五項禁止</h3>
+          <div class="rule-prohibitions" id="rule-prohibitions"></div>
+        </div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">自由潛水證照與救生衣豁免：AIDA 1 不夠，AIDA 2 可以</h3>
+          <div class="aida-compare" id="aida-compare"></div>
+        </div>
+
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">水下攝影限制（最容易被忽略的一條）</h3>
+          <div class="photo-rule" id="photo-rule"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────── 六案重評 ────────── -->
+    <section class="section section--plans6" id="plans6" aria-labelledby="plans6-heading">
+      <div class="section-container">
+        <div class="section-header section-header--editorial">
+          <span class="section-eyebrow">Reassessed 2026-09-26</span>
+          <h2 class="section-title" id="plans6-heading">六案重評</h2>
+          <p class="section-desc">
+            把四份研究（ENSO 衝擊、秘境搜尋、自由潛水、2025 法規）套上同一組限制後重新評估。
+            原本的 5 月五案與 4 月五案合併為這六案——因為 5 月有兩項結構性劣勢
+            （蘭塔渡輪停駛、Similan 5/15 季末關閉）在 4 月都不存在。
+          </p>
+        </div>
+
+        <!-- 海洋區對照 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">六案涵蓋的海洋區</h3>
+          <p class="krabi-block__note">
+            甲米周邊可潛的水域分屬不同管理機關，各有船期、費率與季節限制。
+            這就是六案真正不同的原因。
+          </p>
+          <div class="area-table-wrap">
+            <table class="area-table">
+              <thead>
+                <tr>
+                  <th scope="col">海洋區</th>
+                  <th scope="col">管理機關</th>
+                  <th scope="col">船程</th>
+                  <th scope="col">季節</th>
+                  <th scope="col">公園費</th>
+                  <th scope="col">特色</th>
+                </tr>
+              </thead>
+              <tbody id="area-table-body"></tbody>
+            </table>
+          </div>
+          <div class="excluded-areas" id="excluded-areas"></div>
+        </div>
+
+        <!-- 費用試算 -->
+        <div class="krabi-calc" id="plans6-calc">
+          <div class="krabi-calc__header">
+            <h3 class="krabi-subtitle">六案費用試算</h3>
+            <p class="krabi-calc__note" id="plans6-calc-note"></p>
+          </div>
+          <div class="krabi-calc__grid" id="plans6-cost-grid"></div>
+        </div>
+
+        <!-- 六張方案卡 -->
+        <div class="krabi-plans" id="plans6-list" aria-label="六種方案"></div>
+
+        <!-- 比較矩陣 -->
+        <div class="krabi-compare" id="plans6-compare">
+          <div class="krabi-compare__header">
+            <h3 class="krabi-subtitle">六案並列比較</h3>
+            <div class="krabi-compare__axis-tabs" id="plans6-axis-tabs" role="tablist" aria-label="切換比較軸"></div>
+          </div>
+          <div class="krabi-compare__body" id="plans6-compare-body"></div>
+          <p class="krabi-compare__legend">
+            <span class="krabi-legend__item"><span class="krabi-legend__dot krabi-legend__dot--best" aria-hidden="true"></span>該項最佳</span>
+            <span class="krabi-legend__item">成本效率以 4 人分攤計，5 = 最省</span>
+          </p>
+        </div>
+
+        <!-- 怎麼選 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">怎麼選</h3>
+          <div class="decision-grid" id="decision-grid"></div>
+          <div class="reco-box">
+            <h4 class="reco-box__title">推薦：方案 5（三區精華）</h4>
+            <p class="reco-box__text">
+              同時滿足「能見度最高」（Similan）、「秘境最獨特」（翡翠洞）、「不趕路」（只有 1 次陸路），
+              價格與方案 2、6 幾乎一樣。方案 4 的六區覆蓋聽起來壯觀，
+              實務上會變成每天收行李上船。
+            </p>
+            <p class="reco-box__note">
+              若要加自由潛水則選方案 3：只有住蘭塔能配合導潛並反覆練習。
+            </p>
+          </div>
+        </div>
+
+        <!-- 跨方案法規檢查清單 -->
+        <div class="krabi-block">
+          <h3 class="krabi-subtitle">跨方案通用的法規檢查清單</h3>
+          <p class="krabi-block__note">無論選哪一案，以下都適用。點選可勾選並儲存。</p>
+          <div class="checklist" id="compliance-checklist"></div>
+        </div>
+      </div>
+    </section>
 
     <!-- ────────── 甲米：五方案主體 ────────── -->
       <section class="section section--krabi" id="krabi" aria-labelledby="krabi-heading">
