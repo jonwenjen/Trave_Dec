@@ -2568,3 +2568,40 @@ tr.is-best-row th, tr.is-best-row td { background: var(--color-brand-light); }
 @media (max-width: 720px) {
   .fare__cards { grid-template-columns: 1fr; }
 }
+
+
+/* ═════════════════════════════════════════════════════════════════
+   托運行李費率
+   ═════════════════════════════════════════════════════════════════ */
+
+.bag__panel {
+  background: var(--color-bg-paper); border: 1px solid var(--color-brand);
+  border-radius: var(--radius-card); padding: 20px 22px; margin: 22px 0;
+}
+.bag__h { font-size: 1.0625rem; font-weight: 700; margin: 0 0 10px; color: var(--color-text-primary); }
+.bag__lead { font-size: 0.9375rem; line-height: 1.75; margin: 0 0 14px; color: var(--color-text-secondary); }
+.bag__lead strong { color: var(--color-brand); }
+.bag__table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.bag__table th, .bag__table td {
+  padding: 9px 10px; text-align: left; font-size: 0.8125rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.bag__table thead th { font-weight: 700; color: var(--color-text-primary); background: var(--color-bg-paper); }
+.bag__table tbody th { font-weight: 600; color: var(--color-text-secondary); }
+.bag__table td { font-weight: 600; color: var(--color-text-primary); }
+.bag__row-warn th, .bag__row-warn td { color: var(--color-status-estimate); }
+.bag__note { font-size: 0.8125rem; line-height: 1.7; margin: 0 0 8px; color: var(--color-text-secondary); }
+.bag__note strong { color: var(--color-text-primary); }
+.bag__note-warn {
+  padding: 11px 13px; border-radius: var(--radius-btn); margin: 10px 0;
+  background: color-mix(in srgb, var(--color-status-estimate) 12%, transparent);
+  color: var(--color-text-primary);
+}
+.bag__note-bad { padding: 11px 13px; border-radius: var(--radius-btn); background: color-mix(in srgb, var(--color-status-estimate) 8%, transparent); }
+.bag__prohibited { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 3px; }
+.bag__prohibited li { font-size: 0.8125rem; line-height: 1.6; color: var(--color-text-secondary); }
+
+@media (max-width: 640px) {
+  .bag__table { display: block; overflow-x: auto; }
+  .bag__table tbody, .bag__table thead { display: block; }
+}

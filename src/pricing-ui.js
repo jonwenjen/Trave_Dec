@@ -50,6 +50,7 @@ function row(plan, travelers) {
         </th>
         <td>${esc(REGION_LABEL[plan.region])}</td>
         <td>${esc(b.flightLabel)}</td>
+        <td>${fmt(b.baggage.min)} – ${fmt(b.baggage.max)}</td>
         <td>${esc(b.lodgingLabel)}</td>
         <td>${esc(b.foodLabel)}</td>
         <td>${fmt(b.boats.min)} – ${fmt(b.boats.max)}</td>
@@ -112,6 +113,8 @@ function regionCompare() {
             （${esc(c.cheaper.label)}平均 ${fmt(c.cheaper.avgTWD)}，${esc(c.dearther.label)}平均 ${fmt(c.dearther.avgTWD)}）。
             主因是機票：<strong>普吉直飛 US$315–670 比甲米轉機 US$231–275 貴</strong>，
             換算差約 ${fmt(Math.abs(flightSavingsTWD()))}。
+            <strong>托運行李再拉開差距</strong>：虎航直飛 20kg 來回 TWD 1,900–3,200，
+            亞航轉機 TWD 1,380–1,900——直飛的行李還比轉機貴約 500 TWD。
           </p>
           <p class="price__region-caveat">
             **這修正了先前的判斷。**早期版本誤把普吉的「轉機價」當成「直飛價」，
@@ -173,7 +176,7 @@ export function createPricingSection({ travelers = 2 } = {}) {
           <p class="section-lead">
             把甲米九案與普吉五案<strong>統一壓縮到 7 天 6 晚</strong>，
             並用 2026-09-27 實際查得的價格重算，讓兩區可以直接比。
-            費用含機票、住宿、船資、公園費與餐費，每人計價。
+            費用含機票、<strong>托運行李 20kg</strong>、住宿、船資、公園費與餐費，每人計價。
             <strong class="price__lead-warn">價格對應 2026 年 10 月航班，非 2027-04-06 目標日期。</strong>
           </p>
         </div>
@@ -205,6 +208,7 @@ export function createPricingSection({ travelers = 2 } = {}) {
                   <th scope="col">方案</th>
                   <th scope="col">區域</th>
                   <th scope="col">機票</th>
+                  <th scope="col">托運 20kg</th>
                   <th scope="col">住宿</th>
                   <th scope="col">餐費</th>
                   <th scope="col">船資／人</th>

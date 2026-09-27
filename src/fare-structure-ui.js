@@ -13,6 +13,7 @@
 import {
   FARE_STRUCTURE,
   SCHEDULE_CONFLICT,
+  BAGGAGE,
   FLIGHT_COSTS,
   PRICE_CAVEAT,
   THB_TO_TWD_ASSUMED,
@@ -49,6 +50,54 @@ export function fareOptions() {
   });
   // 有效時間成本由低到高：越高代表「每小時買得越貴」
   return rows.sort((a, b) => a.perHour - b.perHour);
+}
+
+/** 托運行李費率表 */
+function baggagePanel() {
+  const t = BAGGAGE.tigerair;
+  const a = BAGGAGE.airasia;
+  return `
+        <aside class="bag__panel" aria-labelledby="bag-h">
+          <h3 class="bag__h" id="bag-h">托運行李 20kg：廉航報價幾乎都不含這項</h3>
+          <p class="bag__lead">
+            前面所有機票數字都是<strong>不含托運的基本票</strong>。
+            加上 20kg 托運來回，直飛（虎航）要 TWD 1,900～3,200、轉機（亞航）TWD 1,380～1,900。
+            <strong>訂票當下處理最省</strong>——虎航拖到機場只剩 15kg 且要 1,600／程，比預購貴 88%。
+          </p>
+          <table class="bag__table">
+            <caption class="visually-hidden">兩家航空公司托運行李費率比較</caption>
+            <thead>
+              <tr><th scope="col">購買時機</th><th scope="col">虎航（直飛）</th><th scope="col">亞航（轉機）</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">訂票時（最省）</th>
+                <td>20kg ${fmt(t.checked.online)}</td>
+                <td>20kg ${fmt(a.checked.onlineMin)} – ${fmt(a.checked.onlineMax)}</td></tr>
+              <tr><th scope="row">出票後加購</th><td>${fmt(t.checked.afterIssue)}</td><td>依航線浮動</td></tr>
+              <tr><th scope="row">打客服</th><td>${fmt(t.checked.callCenter)}</td><td>—</td></tr>
+              <tr class="bag__row-warn"><th scope="row">機場臨櫃</th>
+                <td>15kg ${fmt(t.checked.airport)}</td><td>—</td></tr>
+              <tr><th scope="row">超重費</th>
+                <td>${fmt(t.overweightPerKg)}／kg</td><td>約 ${fmt(a.overweightPerKg)}／kg</td></tr>
+              <tr><th scope="row">手提（免費）</th>
+                <td>1＋1 件共 10kg</td><td>2 件共 7kg</td></tr>
+            </tbody>
+          </table>
+          <p class="bag__note">
+            <strong>${esc(t.smartFare)}</strong>；${esc(a.packageNote)}。
+          </p>
+          <p class="bag__note bag__note-warn">
+            <strong>⚠️ 潛水行程要特別注意：</strong>${esc(BAGGAGE.sportsEquipment.note)}
+            潛水裝備（配重、蛙鞋、潛水衣）重量可觀，20kg 可能不夠，需考慮 25kg（虎航 ${fmt(t.heavier[25])}）或 35kg（${fmt(t.heavier[35])}）級距。
+            氣瓶須淨空。
+          </p>
+          <p class="bag__note bag__note-bad">
+            <strong>禁止託運：</strong>
+            <ul class="bag__prohibited">
+              ${BAGGAGE.prohibited.map((x) => `<li>${esc(x)}</li>`).join('')}
+            </ul>
+          </p>
+        </aside>`;
 }
 
 function fareCards() {
@@ -145,6 +194,7 @@ export function createFareStructureSection() {
           實際報價為 ${esc(PRICE_CAVEAT.researchDate)} 查得的當期價，非 2027-04 目標日期票價。
         </p>
         ${fareCards()}
+        ${baggagePanel()}
         <p class="price__block-foot">
           直飛單程最低 TWD 4,773、來回 TWD 9,950（7 天）、純轉機來回 TWD 7,053。
           買兩張直飛單程約 9,546，只比來回省 404 TWD——<strong>不足以抵銷拆單失去的行李與改期彈性，不建議刻意拆單。</strong>

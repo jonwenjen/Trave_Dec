@@ -15,13 +15,14 @@ import {
   PRICE_CAVEAT,
   FARE_STRUCTURE,
   SCHEDULE_CONFLICT,
+  BAGGAGE,
   THB_TO_TWD_ASSUMED,
   USD_TO_TWD_ASSUMED,
 } from './data/pricing-2026.js';
 
 export {
   COMPRESSED_PLANS, FLIGHT_COSTS, LODGING, FOOD,
-  COMPRESSION_NOTES, PRICE_CAVEAT, FARE_STRUCTURE, SCHEDULE_CONFLICT,
+  COMPRESSION_NOTES, PRICE_CAVEAT, FARE_STRUCTURE, SCHEDULE_CONFLICT, BAGGAGE,
   THB_TO_TWD_ASSUMED, USD_TO_TWD_ASSUMED,
 };
 
@@ -82,7 +83,23 @@ export function boatsTHB(plan) {
 }
 
 /**
- * 公園費（整團 TWD）。
+ /**
+  * 托運行李 20kg 來回（每人 TWD）。
+  *
+  * 廉航報價幾乎都是不含托運的基本票，所以這是**額外**的支出。
+  * 直飛（虎航）較貴：1,900（預購）～3,200（機場臨櫃 15kg×2）。
+  * 轉機（亞航）較便宜：1,380～1,900。
+  */
+ export function baggageTWD(plan) {
+   if (!plan) return { min: 0, max: 0 };
+   const isDirect = plan.flight === 'tpe-hkt-direct' || plan.flight === 'khm-hkt';
+   const c = isDirect ? BAGGAGE.tigerair.checked : BAGGAGE.airasia.checked;
+   const min = isDirect ? c.online * 2 : c.onlineMin * 2;
+   const max = isDirect ? c.airport * 2 : c.onlineMax * 2;
+   return range(min, max);
+   }
+
+   /** 公園費（整團 TWD）。
  * 國家公園入場費依實際參訪的公園數計算，通常不含在船資內。
  */
 export function parkFeeTHB(plan) {
@@ -100,9 +117,10 @@ export function planTotalTWD(plan) {
   const d = foodTHB(plan);
   const b = boatsTHB(plan);
   const pk = parkFeeTHB(plan);
+  const g = baggageTWD(plan);
   return range(
-    f.min + (l.min + b.min + pk.min) / 2 + d.min,
-    f.max + (l.max + b.max + pk.max) / 2 + d.max,
+    f.min + g.min + (l.min + b.min + pk.min) / 2 + d.min,
+    f.max + g.max + (l.max + b.max + pk.max) / 2 + d.max,
   );
 }
 
@@ -122,9 +140,10 @@ export function planTotalTWDPerPerson(plan, travelers) {
   const d = foodTHB(plan);
   const b = boatsTHB(plan);
   const pk = parkFeeTHB(plan);
+  const g = baggageTWD(plan);
   return range(
-    f.min + (l.min + b.min + pk.min) / n + d.min,
-    f.max + (l.max + b.max + pk.max) / n + d.max,
+    f.min + g.min + (l.min + b.min + pk.min) / n + d.min,
+    f.max + g.max + (l.max + b.max + pk.max) / n + d.max,
   );
 }
 
@@ -138,15 +157,17 @@ export function planBreakdown(plan, travelers = 2) {
   const d = foodTHB(plan);
   const b = boatsTHB(plan);
   const pk = parkFeeTHB(plan);
+  const g = baggageTWD(plan);
   return {
     flight: f,
+    baggage: g,
     lodging: range(l.min / n, l.max / n),
     boats: range(b.min / n, b.max / n),
     parkFee: range(pk.min / n, pk.max / n),
     food: d,
     total: range(
-      f.min + (l.min + b.min + pk.min) / n + d.min,
-      f.max + (l.max + b.max + pk.max) / n + d.max,
+      f.min + g.min + (l.min + b.min + pk.min) / n + d.min,
+      f.max + g.max + (l.max + b.max + pk.max) / n + d.max,
     ),
     rooms,
     travelers: n,

@@ -73,6 +73,78 @@ export const FLIGHT_COSTS = {
   },
 };
 
+
+/* ───────────── 托運行李（2026-09-27 查得，含稅 TWD） ───────────── */
+
+/**
+ * 托運行李費率。
+ *
+ * **這是本模型中最容易被漏掉的一項**：廉航的報價幾乎都是「不含托運」的基本票。
+ * 先前所有機票數字都沒有包含行李，實際花費被低估約 1,400–1,900 TWD／人。
+ *
+ * 特別注意：報價多為**單程**價，來回需乘 2；回程由國外起飛的部分
+ * 按出發地幣別計價，實測數字可能不同。
+ */
+export const BAGGAGE = {
+  tigerair: {
+    id: 'tigerair',
+    airline: '台灣虎航（直飛普吉）',
+    carryOn: { twd: 0, note: '1 件手提＋1 件隨身，合計 10kg 免費，全票種皆含' },
+    checked: {
+      online: 950,     // 訂票時或出票後 4 小時前
+      afterIssue: 1150,
+      callCenter: 1350,
+      airport: 1600,   // 機場只賣 15kg
+    },
+    heavier: { 25: 1050, 35: 1650 },
+    oversizeFee: 550,
+    oversizeAirport: 950,
+    overweightPerKg: 500,
+    smartFare: 'tigersmart 票種 +TWD 950 含 20kg，與單買同價',
+    note:
+      '**訂票當下處理最省**：20kg 線上 $950 → 出票後 $1,150 → 客服 $1,350 → ' +
+      '機場 $1,600（且只剩 15kg）。臨櫃比預購貴 88%。',
+    source: 'https://soar.com.tw/articles/tigerair-baggage',
+  },
+  airasia: {
+    id: 'airasia',
+    airline: '亞洲航空／泰國亞航（轉機）',
+    carryOn: { twd: 0, note: '2 件合計 7kg 免費，全票種皆含' },
+    checked: { onlineMin: 690, onlineMax: 950 },
+    packageAdd: { min: 894, max: 1014 },
+    packageNote: '超值套票含 20kg ＋ 一份餐 ＋ 標準選位；與單買差額在 $250 以內，需比一下',
+    overweightPerKg: 555,
+    note:
+      '**沒有任何票種內含托運。**官網費率表寫「台灣出發預購 20kg $1,590」，' +
+      '但結帳流程的行李頁顯示較低——務必走到那一步才是實際價格。',
+    source: 'https://soar.com.tw/articles/airasia-baggage',
+  },
+  sportsEquipment: {
+    id: 'sportsEquipment',
+    label: '運動器材（潛水裝備、球具）',
+    note: '**不能塞進一般託運額度**，須另外購買。亞航每程 20kg 實測：曼谷 $830、大阪 $920、吉隆坡 $1,140。有轉機每段各算。',
+    perLeg: { min: 830, max: 1140 },
+  },
+  prohibited: [
+    '行動電源、備用鋰電池一律禁止託運，只能手提',
+    '未標示容量的行動電源連手提都禁止',
+    '潛水氣瓶須淨空；未淨空的壓縮氣體罐禁止',
+    '電子菸、加熱菸只能手提（且台灣海關禁止入境）',
+  ],
+};
+
+/** 托運 20kg 來回（每人 TWD，含稅） */
+export function baggageRoundTripTWD(airline = 'tigerair') {
+  if (airline === 'airasia') {
+    return {
+      min: BAGGAGE.airasia.checked.onlineMin * 2,
+      max: BAGGAGE.airasia.checked.onlineMax * 2,
+    };
+  }
+  const c = BAGGAGE.tigerair.checked;
+  return { min: c.online * 2, max: c.airport * 2 };
+}
+
 /* ───────────── 住宿（每晚每間双人房，2026-04 前季） ───────────── */
 
 export const LODGING = {
@@ -332,8 +404,9 @@ export const FARE_STRUCTURE = {
     twd: { min: 7571, max: 11081 },
     hours: '單程 4h15–4h25m',
     basis: 'Trip.com 實測：9/1 週二出→9/8 週二回（7 天）TWD 9,950；9/5→9/8 6 天 TWD 10,241',
-    flexibility: '班表受限：每週僅週二、週六直飛，日期幾乎無法調整',
+    flexibility: '班表受限：每週僅週二、週六直飛，日期幾如無法調整',
     recommended: true,
+    baggageTWD: { min: 1900, max: 3200 },
   },
   'direct-oneway-pair': {
     id: 'direct-oneway-pair',
@@ -343,6 +416,7 @@ export const FARE_STRUCTURE = {
     basis: '直飛單程最低 TWD 4,773（8/29 週六）×2 ≈ 9,546，略低於來回 9,950',
     flexibility: '可分開訂不同日期，但**兩張單程通常不含行李、不利改期，且無來回折扣**',
     recommended: false,
+    baggageTWD: { min: 1900, max: 3200 },
     warning: '省下僅約 400 TWD，不足以抵銷拆單的風險。**不建議刻意拆單。**',
   },
   'open-jaw-direct-out': {
@@ -355,6 +429,7 @@ export const FARE_STRUCTURE = {
       '**這是解決班表限制的關鍵**：回程可選任一日（轉機航班每日班），' +
       '解決「04-12 週一無直飛班」的問題。',
     recommended: true,
+    baggageTWD: { min: 1380, max: 1900 },
     lengthNote: '⚠️ 此報價的回程為 9/19，等於 14 天行程。**縮短至 7 天需重新查價**，不可直接沿用。',
   },
   'open-jaw-connect-out': {
@@ -365,6 +440,7 @@ export const FARE_STRUCTURE = {
     basis: '同一報價來源的反向組合，去程較長',
     flexibility: '出發日不受週二／週六限制',
     recommended: false,
+    baggageTWD: { min: 1380, max: 1900 },
     lengthNote: '⚠️ 同上，去程轉機會吃掉出發日，出海日數實際減少一天。',
   },
   'connect-roundtrip': {
@@ -375,6 +451,7 @@ export const FARE_STRUCTURE = {
     basis: 'Trip.com 實測：9/13→9/19 TWD 7,053；9/14→9/19 TWD 7,111',
     flexibility: '每日有班，日期完全自由',
     recommended: true,
+    baggageTWD: { min: 1380, max: 1900 },
     note: '**最省錢但最耗時間。**省下約 3,100–4,000 TWD，單程多花 4–10 小時。',
   },
 };

@@ -25,6 +25,7 @@ import {
   compressionImpact,
   boatsTHB,
   parkFeeTHB,
+  baggageTWD,
 } from '../src/pricing-helpers.js';
 
 describe('2026 pricing dataset', () => {
@@ -153,10 +154,10 @@ describe('pricing helpers', () => {
     assert.ok(s < 0);
   });
 
-  it('planTotalTWD = 機票 ＋ （住宿 ＋ 船資 ＋ 公園費）÷2 ＋ 餐費（每人）', () => {
+  it('planTotalTWD = 機票 ＋ 托運 ＋ （住宿 ＋ 船資 ＋ 公園費）÷2 ＋ 餐費（每人）', () => {
     for (const p of COMPRESSED_PLANS) {
       const t = planTotalTWD(p);
-      const sum = flightTWD(p).min
+      const sum = flightTWD(p).min + baggageTWD(p).min
         + (lodgingTHB(p).min + boatsTHB(p).min + parkFeeTHB(p).min) / 2
         + foodTHB(p).min;
       assert.ok(Math.abs(t.min - sum) < 2, `${p.id} 總額與分項不符`);
@@ -180,7 +181,7 @@ describe('pricing helpers', () => {
   it('所有方案的每人總額落在合理區間（含船資）', () => {
     for (const p of COMPRESSED_PLANS) {
       const t = planTotalTWDPerPerson(p, 2);
-      assert.ok(t.min > 8000 && t.max < 26000, `${p.id} 總額 ${t.min}–${t.max} 超出合理區間`);
+      assert.ok(t.min > 10000 && t.max < 30000, `${p.id} 總額 ${t.min}–${t.max} 超出合理區間`);
     }
   });
 
@@ -208,7 +209,7 @@ describe('pricing helpers', () => {
   it('planBreakdown 回傳完整分項', () => {
     const p = COMPRESSED_PLANS[0];
     const b = planBreakdown(p);
-    for (const k of ['flight', 'lodging', 'boats', 'parkFee', 'food', 'total']) {
+    for (const k of ['flight', 'baggage', 'lodging', 'boats', 'parkFee', 'food', 'total']) {
       assert.ok(b[k], `缺 ${k}`);
       assert.ok(b[k].min <= b[k].max);
     }
