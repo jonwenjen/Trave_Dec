@@ -4,8 +4,9 @@
  * 目的：把十四案統一壓縮到 7 天，並以 2026 年實際查得的價格給出可比較的總費用。
  *
  * 三個必須誠實標明的限制：
- *  1. 機票是最不穩定的變項。TPE→HKT 直飛與 TPE→KBV 轉機的價差會隨季節、
- *     訂票時點、是否含行李而大幅變動。這裡用的是 2026 年 9 月查得的價格。
+ *  1. 機票是最不穩定的變項。所有票價為 **2026-09-27 查得的當期價格**，
+ *     **不對應 2027-04 的目標日期**。2027/04/06 的票價須於 2027-02-25
+ *     （出發前約 40 天，業界普遍建議的甜蜜點）實際查價。
  *  2. 住宿以「兩人一房、每人分攤」計算，單人入住需另加差額。
  *  3. 7 天壓縮必然犧牲某些點位——每案都在 compressedFrom 標明被砍掉什麼。
  *
@@ -23,33 +24,51 @@ export const USD_TO_TWD_ASSUMED = 31.5;
 /* ───────────── 機票（2026-09 查得，來回每人） ───────────── */
 
 export const FLIGHT_COSTS = {
-  'tpe-hkt': {
-    id: 'tpe-hkt',
-    route: '桃園 TPE → 普吉 HKT',
+  'tpe-hkt-direct': {
+    id: 'tpe-hkt-direct',
+    route: '桃園 TPE → 普吉 HKT（直飛）',
     direct: true,
-    twd: { min: 7400, max: 8400 },
-    basis: 'Skyscanner 2026-09 顯示直飛來回 US$231–250（約 TWD 7,400–8,000）；3 月最便宜，約 40 天前訂最優',
-    note: '每週僅約 2 班，日期受限。US$231 為最低價，實際常見 US$250 以上。',
-    source: 'https://www.skyscanner.net/routes/tpe/hkt/taipei-taiwan-taoyuan-to-phuket.html',
+    twd: { min: 9900, max: 21100 },
+    basis:
+      'Google Flights 2026-09-27 實測：虎航直飛典型價 US$315–670（週二、週六各 1 班）；' +
+      'Trip.com 2026-09-27 顯示 10 月來回 TWD 13,047 起（未稅）。',
+    note:
+      '**這是本次重評中修正過的數字。**先前版本誤將「轉機 $231」當成直飛價，' +
+      '低估約 2,000–4,000 TWD。直飛的代價是真的：每週僅 2 班（週二、週六），' +
+      '且旺季（6 月）可達 US$380。',
+    source: 'https://www.google.com/travel/flights/flights-from-taipei-city-to-phuket.html',
+  },
+  'tpe-hkt-connect': {
+    id: 'tpe-hkt-connect',
+    route: '桃園 TPE → 普吉 HKT（轉機）',
+    direct: false,
+    twd: { min: 8000, max: 11500 },
+    basis:
+      'Google Flights 2026-09-27：亞洲航空等轉機典型價 US$255–350；' +
+      'Trip.com 顯示部分 KUL 轉機 TWD 7,602 起但需 18–24 小時。',
+    note: '**便宜但要用時間換。**最便宜組合常為 8–15 小時、含二次中轉。',
+    source: 'https://www.google.com/travel/flights/flights-from-taipei-city-to-phuket.html',
   },
   'tpe-kbv': {
     id: 'tpe-kbv',
-    route: '桃園 TPE → 甲米 KBV',
+    route: '桃園 TPE → 甲米 KBV（經曼谷）',
     direct: false,
-    twd: { min: 8600, max: 11500 },
-    basis: 'Trip.com 2026-09 顯示來回 US$231–275（約 TWD 7,300–8,700），但有 21 小時的離譜組合票',
+    twd: { min: 8600, max: 14000 },
+    basis:
+      'Trip.com 2026-09 顯示 US$231–275，但多為 21 小時以上的離譜組合；' +
+      '合理時數（13–16h）者未取得可靠報價，區間因此上修。',
     note:
-      '**票價看似與普吉相當，總時間卻差很多**：直飛 4h25m vs 轉機 13–16h。' +
-      '若只看機票會誤判——真正的成本是一天的移動量，以及轉機失敗的風險。',
+      '**票價看似與普吉轉機相當，總時間卻差很多。**' +
+      '若只看機票會誤判——真正的成本是一天的移動量與轉機失敗風險。',
     source: 'https://us.trip.com/flights/taipei-to-krabi-town/airfares-tpe-kbv/',
   },
   'khm-hkt': {
     id: 'khm-hkt',
-    route: '高雄 KHH → 普吉 HKT',
+    route: '高雄 KHH → 普吉 HKT（直飛）',
     direct: true,
-    twd: { min: 6800, max: 8200 },
-    basis: '台灣虎航 KHH 出發；US$231 基準下略低於 TPE',
-    note: '若同行者住高雄可省一段國內線，但需自行前往桃園或高雄小港。',
+    twd: { min: 9800, max: 20500 },
+    basis: '**無實測報價**——僅為 TPE 直飛價扣減國內線段約 200–500 TWD 的推估值。',
+    note: '⚠️ 此為推估，非查價。若同行者住高雄可省一段國內線，但須自行前往小港。',
     source: 'https://www.tigerairtw.com/',
   },
 };
@@ -220,7 +239,7 @@ export const COMPRESSED_PLANS = [
     tradeoff: null,
     lodging: { 'phuket-mid': 6 },
     food: 'resort',
-    flight: 'tpe-hkt',
+    flight: 'tpe-hkt-direct',
     boats: { basis: '整團', thb: { min: 13800, max: 18000 } },
     parkFeeTHB: 300,
   },
@@ -231,7 +250,7 @@ export const COMPRESSED_PLANS = [
     tradeoff: null,
     lodging: { 'kohyao-mid': 3, 'phuket-mid': 3 },
     food: 'mid',
-    flight: 'tpe-hkt',
+    flight: 'tpe-hkt-direct',
     boats: { basis: '整團', thb: { min: 13800, max: 17500 } },
     parkFeeTHB: 650,
   },
@@ -245,7 +264,7 @@ export const COMPRESSED_PLANS = [
       '認證就無法完成——而你是專程為認證飛過去的。**建議維持 8 天，不要壓縮此案。**',
     lodging: { 'phuket-mid': 6 },
     food: 'mid',
-    flight: 'tpe-hkt',
+    flight: 'tpe-hkt-direct',
     boats: { basis: '整團', thb: { min: 20000, max: 27000 } },
     parkFeeTHB: 0,
     notRecommended: true,
@@ -262,7 +281,7 @@ export const COMPRESSED_PLANS = [
       '代價是失去「天氣不好時的第二次機會」。',
     lodging: { 'phuket-budget': 2, 'khaolak-mid': 4 },
     food: 'mid',
-    flight: 'tpe-hkt',
+    flight: 'tpe-hkt-direct',
     boats: { basis: '整團', thb: { min: 20000, max: 26000 } },
     parkFeeTHB: 1350,
   },
@@ -276,7 +295,7 @@ export const COMPRESSED_PLANS = [
       '涵蓋的 5 個海域全部保留。',
     lodging: { 'phuket-budget': 3, 'kohyao-mid': 3 },
     food: 'mid',
-    flight: 'tpe-hkt',
+    flight: 'tpe-hkt-direct',
     boats: { basis: '整團', thb: { min: 14000, max: 18000 } },
     parkFeeTHB: 650,
   },

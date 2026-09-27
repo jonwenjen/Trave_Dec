@@ -2506,3 +2506,9 @@ tr.is-best-row th, tr.is-best-row td { background: var(--color-brand-light); }
   .price__flights, .price__basis { grid-template-columns: 1fr; }
   .price__basis > div { flex-direction: column; gap: 2px; }
 }
+
+.price__lead-warn { display: block; margin-top: 8px; padding: 8px 12px; border-radius: var(--radius-btn);
+  background: color-mix(in srgb, var(--color-status-estimate) 14%, transparent); color: var(--color-text-primary); }
+.price__date-warning { font-size: 0.875rem; line-height: 1.7; margin: 0 0 12px; padding: 12px 14px;
+  background: color-mix(in srgb, var(--color-status-estimate) 12%, transparent);
+  border-left: 3px solid var(--color-status-estimate); border-radius: var(--radius-btn); color: var(--color-text-primary); }

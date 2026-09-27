@@ -174,11 +174,38 @@ export function cheapestRegionPlan(region, travelers = 2) {
   return rows[0];
 }
 
-/** 機票省額（普吉相對甲米，可能為負） */
+/**
+ * 機票省額（普吉相對甲米）。
+ * **可能為負**——普吉直飛的票價比甲米轉機貴，這是實情，不修飾。
+ */
 export function flightSavingsTWD() {
-  const hkt = FLIGHT_COSTS['tpe-hkt'].twd;
+  const hkt = FLIGHT_COSTS['tpe-hkt-direct'].twd;
   const kbv = FLIGHT_COSTS['tpe-kbv'].twd;
   return Math.round((kbv.min + kbv.max) / 2 - (hkt.min + hkt.max) / 2);
+}
+
+/**
+ * 機票的日期落差。
+ *
+ * 這裡刻意不隱藏：所有價格都是 2026-09-27 查得的當期票價，
+ * 對應 2026 年 10 月前後的航班，**不是 2027-04-06 的實際票價**。
+ */
+export function flightDateCaveat(targetDate = '2027-04-06') {
+  const researchDate = PRICE_CAVEAT.researchDate;
+  const days = Math.round(
+    (new Date(targetDate).getTime() - new Date(researchDate).getTime()) / 864e5,
+  );
+  // 業界普遍建議：出發前約 40 天訂票為甜蜜點
+  const bookBy = new Date(new Date(targetDate).getTime() - 40 * 864e5)
+    .toISOString().slice(0, 10);
+  return {
+    researchDate,
+    targetDate,
+    daysAhead: days,
+    bookBy,
+    quotedFor: '2026 年 10 月前後航班',
+    isTargetDatePrice: false,
+  };
 }
 
 /**

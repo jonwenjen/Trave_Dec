@@ -19,6 +19,7 @@ import {
   planBreakdown,
   cheapestPlans,
   flightSavingsTWD,
+  flightDateCaveat,
   cheapestRegionPlan,
   compareRegions,
   compressionImpact,
@@ -73,10 +74,10 @@ describe('2026 pricing dataset', () => {
     }
   });
 
-  it('甲米案用 KBV、普吉案用 HKT', () => {
+  it('甲米案用 KBV、普吉案用 HKT 直飛', () => {
     for (const p of COMPRESSED_PLANS) {
       if (p.region === 'krabi') assert.equal(p.flight, 'tpe-kbv', `${p.id} 應走 KBV`);
-      if (p.region === 'phuket') assert.equal(p.flight, 'tpe-hkt', `${p.id} 應走 HKT`);
+      if (p.region === 'phuket') assert.equal(p.flight, 'tpe-hkt-direct', `${p.id} 應走 HKT 直飛`);
     }
   });
 
@@ -128,14 +129,28 @@ describe('pricing helpers', () => {
 
   it('flightTWD 回傳 TWD 區間', () => {
     const f = flightTWD(COMPRESSED_PLANS[0]);
-    assert.ok(f.min >= 7000 && f.max <= 12000);
+    assert.ok(f.min >= 7900 && f.max <= 21500);
   });
 
-  it('flightSavingsTWD 計算普吉相對甲米的機票省額（可能為負）', () => {
+  it('flightSavingsTWD 反映普吉直飛可能比甲米轉機貴（負值）', () => {
+    // 2026-09 實測：直飛 US$315–670 vs 甲米轉機 US$231–275
+    // 這是實情，不應被修飾成「普吉比較便宜」
+    assert.ok(flightSavingsTWD() < 0, `實得 ${flightSavingsTWD()}，應為負`);
+  });
+
+  it('flightDateCaveat 明確聲明報價非目標日期票價', () => {
+    const c = flightDateCaveat('2027-04-06');
+    assert.equal(c.isTargetDatePrice, false);
+    assert.equal(c.targetDate, '2027-04-06');
+    assert.ok(c.daysAhead > 150 && c.daysAhead < 220, `實得 ${c.daysAhead} 天`);
+    assert.equal(c.bookBy, '2027-02-25');
+  });
+
+  it('flightSavingsTWD 回傳數字（負值代表普吉直飛較貴）', () => {
     const s = flightSavingsTWD();
-    assert.ok(typeof s === 'number');
-    // 甲米轉機票價可能與直飛相當甚至更高，不可預設正數
-    assert.ok(s > -2000 && s < 6000);
+    assert.equal(typeof s, 'number');
+    // 實測約 -4,300 TWD：普吉直飛比甲米轉機貴
+    assert.ok(s < 0);
   });
 
   it('planTotalTWD = 機票 ＋ （住宿 ＋ 船資 ＋ 公園費）÷2 ＋ 餐費（每人）', () => {
@@ -165,7 +180,7 @@ describe('pricing helpers', () => {
   it('所有方案的每人總額落在合理區間（含船資）', () => {
     for (const p of COMPRESSED_PLANS) {
       const t = planTotalTWDPerPerson(p, 2);
-      assert.ok(t.min > 8500 && t.max < 18000, `${p.id} 總額 ${t.min}–${t.max} 超出合理區間`);
+      assert.ok(t.min > 8000 && t.max < 26000, `${p.id} 總額 ${t.min}–${t.max} 超出合理區間`);
     }
   });
 

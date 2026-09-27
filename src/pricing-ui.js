@@ -109,13 +109,15 @@ function regionCompare() {
         <div class="price__region-compare">
           <p class="price__region-verdict">
             以 2 人、7 天計，<strong>${esc(c.cheaper.label)}平均每人便宜約 ${fmt(c.diffTWD)}</strong>
-            （${esc(c.dearther.label)}平均 ${fmt(c.dearther.avgTWD)}，${esc(c.cheaper.label)}平均 ${fmt(c.cheaper.avgTWD)}）。
-            機票省下約 ${fmt(flightSavingsTWD())}，但${esc(c.dearther.label)}的
-            ${c.dearther.region === 'krabi' ? 'Similan 船資較高' : '住宿較高'}部分抵銷了這個優勢。
+            （${esc(c.cheaper.label)}平均 ${fmt(c.cheaper.avgTWD)}，${esc(c.dearther.label)}平均 ${fmt(c.dearther.avgTWD)}）。
+            主因是機票：<strong>普吉直飛 US$315–670 比甲米轉機 US$231–275 貴</strong>，
+            換算差約 ${fmt(Math.abs(flightSavingsTWD()))}。
           </p>
           <p class="price__region-caveat">
-            **但價格不是唯一考量。**普吉的交通成本含直飛省下的 10 小時，
-            甲米則有 Trang 與翡翠洞這些普吉沒有的秘境。價格相近時，選項取決於你要什麼。
+            **這修正了先前的判斷。**早期版本誤把普吉的「轉機價」當成「直飛價」，
+            得出「普吉比較便宜」的結論。加上直飛的真實票價後，結論反轉。
+            普吉的優勢在<strong>時間</strong>（省 10 小時）與<strong>自由潛水訓練</strong>，
+            不在價格。
           </p>
         </div>`;
 }
@@ -126,6 +128,13 @@ function caveatPanel() {
           <h3 class="price__caveat-h" id="price-caveat-h">
             ${esc(PRICE_CAVEAT.headline)}（研究於 ${esc(PRICE_CAVEAT.researchDate)}）
           </h3>
+          <p class="price__date-warning">
+            <strong>⚠️ 報價日期不等於出行日期。</strong>
+            上方機票是 <strong>2026-09-27 查得的當期價格</strong>，
+            對應的是 2026 年 10 月前後的航班，<strong>不是 2027-04-06 的票價</strong>。
+            目標出發日距今約 191 天，票價已進入可預訂範圍但仍會變動。
+            建議於 <strong>2027-02-25</strong>（出發前 40 天）實際查價後再定案。
+          </p>
           <ul class="price__caveat-list">
             ${PRICE_CAVEAT.items.map((i) => `<li>${esc(i)}</li>`).join('')}
           </ul>
@@ -163,17 +172,19 @@ export function createPricingSection({ travelers = 2 } = {}) {
           <h2 class="section-title" id="pricing-heading">2026 前季價格・十四案 7 天</h2>
           <p class="section-lead">
             把甲米九案與普吉五案<strong>統一壓縮到 7 天 6 晚</strong>，
-            並用 2026 年 9 月實際查得的價格重算，讓兩區可以直接比。
+            並用 2026-09-27 實際查得的價格重算，讓兩區可以直接比。
             費用含機票、住宿、船資、公園費與餐費，每人計價。
+            <strong class="price__lead-warn">價格對應 2026 年 10 月航班，非 2027-04-06 目標日期。</strong>
           </p>
         </div>
 
         <div class="price__block">
-          <h3 class="price__block-h">機票（每人來回，2026-09 查得）</h3>
+          <h3 class="price__block-h">機票（每人來回，2026-09-27 當期價，非 2027/04 票價）</h3>
           <p class="price__block-lead">
             這是兩區最大的結構差異：<strong>TPE→HKT 直飛</strong>對上
-            <strong>TPE→KBV 經曼谷</strong>。票價看似相近（普吉甚至更便宜），
-            但甲米多花 9–11 小時在轉機上——那是無法用錢買回來的。
+            <strong>TPE→KBV 經曼谷</strong>。**注意：直飛並不比轉機便宜**——
+            轉機最便宜 US$255，直飛要 US$315–670，價差約 TWD 2,000–10,000。
+            甲米多花 9–11 小時在轉機上，但省下的是票價，不是時間。
           </p>
           ${flightCards()}
         </div>
