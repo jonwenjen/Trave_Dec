@@ -102,6 +102,90 @@ export const PRICING_2026 = {
     + '**不是 2027-03/04 的價格**。2027 年須重新查證，建議 2027-02-25。',
 };
 
+
+/* ───────────── 6 人團體・2 人提前 2 天回 ───────────── */
+
+/**
+ * 分批回程的交通前提。
+ *
+ * **關鍵限制：4/4 是週日，直飛只飛週二與週六 → 提前回的人必須轉機。**
+ * 這不是偏好問題，是班表問題。
+ */
+export const SPLIT_GROUP = {
+  total: 6,
+  earlyReturners: 2,
+  fullGroup: 4,
+  earlyReturnDate: '2027-04-04',
+  earlyReturnWeekday: '週日',
+  mainReturnDate: '2027-04-05',
+  mainReturnWeekday: '週一',
+
+  earlyOptions: [
+    {
+      id: 'early-night',
+      label: 'HKT 20:50 → 高雄 KHH 07:15⁺¹',
+      duration: '9h25m',
+      stops: 1,
+      oneWayTWD: { min: 9206, max: 9262 },
+      dayUsable: true,
+      note: '**推薦。**4/4 整天可用，航後 9.4 小時多但晚上出發影響較小。',
+    },
+    {
+      id: 'early-morning',
+      label: 'HKT 10:40 → 高雄 KHH 09:40⁺¹',
+      duration: '22h',
+      stops: 1,
+      oneWayTWD: { min: 9135, max: 9206 },
+      dayUsable: false,
+      note: '省時間但代價大：4/4 整天不能出海，且 22 小時轉機。',
+    },
+  ],
+
+  mainOptions: [
+    {
+      id: 'main-night',
+      label: 'HKT 20:35 → 桃園／高雄 12:20⁺¹',
+      duration: '14h45m',
+      stops: 1,
+      oneWayTWD: { min: 3625, max: 3678 },
+      note: '主團體沿用原定夜航，4/5 白天可自由使用。',
+    },
+  ],
+
+  directAvailableEarly: false,
+  directDays: [2, 6],
+  directNote:
+    '**4/4 週日沒有直飛。**虎航直飛僅每週二、週六，' +
+    '因此提前 2 天回的人只能轉機——這是班表決定，不是選擇。',
+  impact:
+    '提前的 2 人比主團體少 2 個海上日、2 晚住宿。' +
+    '船資若為整團包船，早退者的份額不會減少（船照開），' +
+    '但住宿與餐費會實際少兩天。',
+};
+
+/** 提前回程者的來回交通（每人 TWD，含托運 20kg） */
+export function earlyTravelerTWD(option = 'early-night') {
+  const opt = SPLIT_GROUP.earlyOptions.find((o) => o.id === option)
+    || SPLIT_GROUP.earlyOptions[0];
+  const flightOut = FLIGHT_OPTIONS.roundTripTWD;
+  const returnLeg = opt.oneWayTWD;
+  const bag = FLIGHT_OPTIONS.baggageTWD;
+  return {
+    min: flightOut.min + returnLeg.min + bag.min,
+    max: flightOut.max + returnLeg.max + bag.max,
+    option: opt.id,
+  };
+}
+
+/** 主團體回程的來回交通（每人 TWD，含托運 20kg） */
+export function mainTravelerTWD() {
+  const f = FLIGHT_OPTIONS;
+  return {
+    min: f.roundTripTWD.min + f.baggageTWD.min,
+    max: f.roundTripTWD.max + f.baggageTWD.max,
+  };
+}
+
 /* ───────────── 住宿基準（每晚每間双人房，THB） ───────────── */
 
 export const LODGING = {

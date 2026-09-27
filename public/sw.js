@@ -5,7 +5,7 @@
  * 不做背景同步，也不快取任何第三方網域（官方連結仍需連網）。
  */
 
-const CACHE = 'trave-dec-v10-reeval';
+const CACHE = 'trave-dec-v11-split-group';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {

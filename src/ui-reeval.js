@@ -5,6 +5,7 @@
  * 每張卡可展開逐日行程、逐日費用、優缺點。
  */
 
+import { SPLIT_GROUP, splitGroupByTotal, earlyReturnSaving } from './helpers-split-group.js';
 import {
   PLANS,
   DESTINATIONS,
@@ -231,6 +232,102 @@ function flightPanel() {
     </aside>`;
 }
 
+function splitGroupPanel() {
+  const rows = splitGroupByTotal();
+  const mid = (r) => (r.min + r.max) / 2;
+  const th = (r) => `${thb(r.min)} – ${thb(r.max)}`;
+  const tw = (r) => `${twd(r.min)} – ${twd(r.max)}`;
+
+  const rowsHtml = rows.map(({ plan, breakdown: b }) => {
+    const save = earlyReturnSaving(plan);
+    const m = mid(save);
+    const saveTxt = m < 0
+      ? `<span class="sg-save sg-save--neg">多花 ${thb(Math.abs(m))}</span>`
+      : `<span class="sg-save">省 ${thb(m)}</span>`;
+    return `<tr${plan.isExtreme ? ' class="is-extreme"' : ''}>
+        <th scope="row"><span class="sg-tag">${plan.tag}</span><span>${esc(plan.name)}</span></th>
+        <td>${th(b.main.total)}</td>
+        <td>${th(b.early.total)}</td>
+        <td class="sg-total">${th(b.groupTotal)}</td>
+        <td class="sg-twd">${tw(b.groupTotalTWD)}</td>
+        <td>${saveTxt}</td>
+      </tr>`;
+  }).join('');
+
+  const s0 = rows[0].breakdown;
+  const detail = [
+    ['出發 3/29 晚（來回票，已含托運）', th(s0.main.flight)],
+    ['回程 4/5 晚・4 人（單程）', th(SPLIT_GROUP.mainOptions[0].oneWayTWD)],
+    ['回程 4/4 晚・2 人提前（單程）', th(SPLIT_GROUP.earlyOptions[0].oneWayTWD)],
+    ['整團船資 6 人分攤', th(s0.main.boats)],
+    ['公園費 6 人分攤', th(s0.main.parkFee)],
+    ['住宿整團（16 房晚）', th(s0.lodgingTotal)],
+    ['餐費・主團 7 天', th(s0.main.food)],
+    ['餐費・早退 5 天', th(s0.early.food)],
+  ].map(([k, v]) => `<div class="sg-row"><span class="sg-row-k">${k}</span><span class="sg-row-v">${v}</span></div>`).join('');
+
+  const optCard = (o, rec) => `<div class="sg-opt">
+      ${rec ? '<span class="sg-opt-label sg-opt-label--rec">推薦</span>' : '<span class="sg-opt-label">代價大</span>'}
+      <p class="sg-opt-f">${esc(o.label)}</p>
+      <p class="sg-opt-d">${esc(o.duration)}・${th(o.oneWayTWD)}</p>
+      <p class="sg-opt-n">${esc(o.note)}</p>
+    </div>`;
+
+  return `
+    <div class="price__block" id="split-group">
+      <h3 class="price__block-h">6 人團體・2 人提前 2 天回（團體估價）</h3>
+      <p class="section-lead">
+        6 人同行但只有 4 人待到最後：2 人於 <strong>4/4（週日）</strong>先回，
+        4 人 <strong>4/5（週一）</strong>回。這個組合會改變機票、住宿與船資的分攤方式。
+      </p>
+
+      <div class="sg-warn">
+        <h4 class="sg-warn-h">⚠️ 4/4 是週日，沒有直飛</h4>
+        <p class="sg-warn-p">
+          虎航 TPE↔HKT 直飛僅每週<strong>二</strong>與每週<strong>六</strong>各一班。
+          4/4 落在週日，<strong>提前回的人只能轉機</strong>——這是班表限制，不是可以選擇的方案。
+        </p>
+        <div class="sg-opts">
+          ${optCard(SPLIT_GROUP.earlyOptions[0], true)}
+          ${optCard(SPLIT_GROUP.earlyOptions[1], false)}
+        </div>
+        <p class="sg-warn-impact"><strong>對行程的影響：</strong>${esc(SPLIT_GROUP.impact)}</p>
+      </div>
+
+      <div class="sg-key">
+        <h4 class="sg-key-h">三個容易算錯的地方</h4>
+        <ul class="sg-key-list">
+          <li><strong>機票</strong> — 早退者回程日期不同，票也不同。而且 4/4 只能買轉機單程（約 ${thb(SPLIT_GROUP.earlyOptions[0].oneWayTWD.min)}），反而比主團體 4/5 的轉機單程（約 ${thb(SPLIT_GROUP.mainOptions[0].oneWayTWD.min)}）貴一倍以上。</li>
+          <li><strong>船資不變</strong> — 船照開，早退者的份額不會減少，仍是整團船資 ÷ 6。</li>
+          <li><strong>住宿真的少</strong> — 前 4 晚 6 人住 3 間，後 2 晚 4 人住 2 間，共 16 房晚（6 人全程則是 18 房晚），省下 2 房晚。</li>
+        </ul>
+      </div>
+
+      <div class="price__table-scroll">
+        <table class="sg-compare">
+          <caption class="sg-caption">11 個方案的 6 人分批團體總額（THB，含機票與托運 20kg）</caption>
+          <thead><tr>
+            <th scope="col">方案</th>
+            <th scope="col">主團 4 人<small>每人 THB・4/5 回</small></th>
+            <th scope="col">早退 2 人<small>每人 THB・4/4 回</small></th>
+            <th scope="col">團體總額<small>THB</small></th>
+            <th scope="col">團體總額<small>TWD</small></th>
+            <th scope="col">提前回<small>相對 6 人同行</small></th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+
+      <div class="sg-detail">
+        <h4 class="sg-detail-h">以「${esc(rows[0].plan.name)}」為例的分項拆解</h4>
+        <div class="sg-detail-grid">${detail}</div>
+        <p class="sg-detail-note">
+          價格為 2026-09-27 查得的當期價，非 2027-03 的實際價格。
+        </p>
+      </div>
+    </div>`;
+}
+
 export function createReevalSection({ travelers = 2 } = {}) {
   const section = document.getElementById('reeval');
   if (!section) return { refreshTravelers() {}, destroy() {} };
@@ -270,6 +367,8 @@ export function createReevalSection({ travelers = 2 } = {}) {
         <div class="rv__cards">
           ${plansByPrice(state.travelers).map((p) => planCard(p, state.travelers)).join('')}
         </div>
+
+        ${splitGroupPanel()}
 
         <div class="price__block">
           <h3 class="price__block-h">十一案比較（${state.travelers} 人）</h3>
